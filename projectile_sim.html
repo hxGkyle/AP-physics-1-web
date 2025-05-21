@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Projectile Simulator</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #controls { margin-bottom: 10px; }
+    label { margin-right: 10px; }
+    canvas { border: 1px solid #ccc; }
+</style>
+</head>
+<body>
+<h2>Projectile Simulator (Angle &amp; Speed)</h2>
+<div id="controls">
+    <label>Angle: <span id="angleVal">45</span>°</label>
+    <input type="range" id="angle" min="10" max="80" value="45" step="1">
+    <label style="margin-left:20px;">Speed: <span id="speedVal">20</span> m/s</label>
+    <input type="range" id="speed" min="5" max="30" value="20" step="1">
+</div>
+<canvas id="simCanvas" width="800" height="450"></canvas>
+
+<script>
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+const angleSlider = document.getElementById('angle');
+const speedSlider = document.getElementById('speed');
+const angleLabel = document.getElementById('angleVal');
+const speedLabel = document.getElementById('speedVal');
+
+const g = 9.8;       // gravity (m/s^2)
+const scale = 10;    // pixels per meter for drawing
+
+function draw() {
+    const angleDeg = parseFloat(angleSlider.value);
+    const angleRad = angleDeg * Math.PI / 180;
+    const v0 = parseFloat(speedSlider.value);
+
+    angleLabel.textContent = angleDeg;
+    speedLabel.textContent = v0;
+
+    // clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // ground line
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height - 20);
+    ctx.lineTo(canvas.width, canvas.height - 20);
+    ctx.strokeStyle = "#555";
+    ctx.stroke();
+
+    // trajectory
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height - 20);
+    for (let t = 0; t <= (2 * v0 * Math.sin(angleRad) / g); t += 0.05) {
+        const x = v0 * Math.cos(angleRad) * t;
+        const y = v0 * Math.sin(angleRad) * t - 0.5 * g * t * t;
+        const canvasX = x * scale;
+        const canvasY = canvas.height - 20 - y * scale;
+        if (canvasX > canvas.width) break; // stop if off canvas
+        ctx.lineTo(canvasX, canvasY);
+    }
+    ctx.strokeStyle = "#0077cc";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // launch point marker
+    ctx.beginPath();
+    ctx.arc(0, canvas.height - 20, 5, 0, 2*Math.PI);
+    ctx.fillStyle = "#cc0000";
+    ctx.fill();
+}
+
+angleSlider.addEventListener('input', draw);
+speedSlider.addEventListener('input', draw);
+
+// initial draw
+draw();
+</script>
+</body>
+</html>
