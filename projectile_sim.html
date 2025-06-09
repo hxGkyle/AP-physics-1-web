@@ -1,81 +1,357 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Projectile Simulator</title>
-<style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    #controls { margin-bottom: 10px; }
-    label { margin-right: 10px; }
-    canvas { border: 1px solid #ccc; }
-</style>
+  <meta charset="UTF-8" />
+  <title>Fluid & Continuity Simulators</title>
+  <style>
+    /* ------ shared layout ------ */
+    body{font-family:Arial,Helvetica,sans-serif;margin:20px}
+    #appSelector{margin-bottom:18px}
+    #appSelector button{margin-right:12px;padding:6px 14px;font-size:1rem;cursor:pointer;border:1px solid #888;border-radius:6px;background:#f5f5f5;transition:background .2s}
+    #appSelector button.active{background:#0077cc;color:#fff}
+    .app{display:none}
+    .app.active{display:block}
+
+    /* ------ Fluid Projectile styles (scoped) ------ */
+    #fluidApp #controls{margin-bottom:10px}
+    #fluidApp label{margin-right:10px}
+    #fluidApp .value{display:inline-block;width:4ch;text-align:right;font-variant-numeric:tabular-nums}
+    #fluidApp canvas{border:1px solid #ccc;cursor:crosshair}
+    #fluidApp button{cursor:pointer}
+
+    /* ------ Continuity Equation styles (scoped) ------ */
+    #continuityApp #ceControls{margin-bottom:10px}
+    #continuityApp label{margin-right:14px}
+    #continuityApp .value{display:inline-block;width:5.5ch;text-align:right;font-variant-numeric:tabular-nums}
+    #continuityApp canvas{border:1px solid #888}
+    #continuityApp button{cursor:pointer}
+  </style>
 </head>
 <body>
-<h2>Projectile Simulator (Angle &amp; Speed)</h2>
-<div id="controls">
-    <label>Angle: <span id="angleVal">45</span>°</label>
-    <input type="range" id="angle" min="10" max="80" value="45" step="1">
-    <label style="margin-left:20px;">Speed: <span id="speedVal">20</span> m/s</label>
-    <input type="range" id="speed" min="5" max="30" value="20" step="1">
-</div>
-<canvas id="simCanvas" width="800" height="450"></canvas>
+  <h1>Fluid Mechanics Playground</h1>
+  <div id="appSelector">
+    <button data-app="fluid" class="active">💧 Fluid Projectile Simulator</button>
+    <button data-app="continuity">➡️ Continuity Visualizer</button>
+  </div>
 
-<script>
-const canvas = document.getElementById('simCanvas');
-const ctx = canvas.getContext('2d');
-const angleSlider = document.getElementById('angle');
-const speedSlider = document.getElementById('speed');
-const angleLabel = document.getElementById('angleVal');
-const speedLabel = document.getElementById('speedVal');
+  <!-- ================= FLUID PROJECTILE SIM ================= -->
+  <section id="fluidApp" class="app active">
+    <h2>Fluid Projectile Simulator (Multi‑Scenario)</h2>
 
-const g = 9.8;       // gravity (m/s^2)
-const scale = 10;    // pixels per meter for drawing
+    <div id="controls">
+      <label>Angle θ: <span id="angleVal" class="value">--</span>°</label>
+      <input type="range" id="angle" min="5" max="85" step="0.1" />
 
-function draw() {
-    const angleDeg = parseFloat(angleSlider.value);
-    const angleRad = angleDeg * Math.PI / 180;
-    const v0 = parseFloat(speedSlider.value);
+      <label style="margin-left:20px;">Outlet Radius r: <span id="radiusVal" class="value">--</span> m</label>
+      <input type="range" id="radius" min="0.005" max="0.05" step="0.005" />
 
-    angleLabel.textContent = angleDeg;
-    speedLabel.textContent = v0;
+      <label id="waterBlock" style="margin-left:20px;">Water Height h₁: <span id="waterHeightVal" class="value">--</span> m
+        <input type="range" id="waterHeight" min="0" max="40" step="0.1" />
+      </label>
 
-    // clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+      <label style="margin-left:20px;">Outlet Height h₂: <span id="outletHeightVal" class="value">--</span> m</label>
+      <input type="range" id="outletHeight" min="0" max="20" step="0.1" />
 
-    // ground line
-    ctx.beginPath();
-    ctx.moveTo(0, canvas.height - 20);
-    ctx.lineTo(canvas.width, canvas.height - 20);
-    ctx.strokeStyle = "#555";
-    ctx.stroke();
+      <button id="resetBtn" style="margin-left:30px;">🔄 New Level</button>
+      <button id="switchBtn" style="margin-left:10px;">▶ Next Scenario</button>
+    </div>
 
-    // trajectory
-    ctx.beginPath();
-    ctx.moveTo(0, canvas.height - 20);
-    for (let t = 0; t <= (2 * v0 * Math.sin(angleRad) / g); t += 0.05) {
-        const x = v0 * Math.cos(angleRad) * t;
-        const y = v0 * Math.sin(angleRad) * t - 0.5 * g * t * t;
-        const canvasX = x * scale;
-        const canvasY = canvas.height - 20 - y * scale;
-        if (canvasX > canvas.width) break; // stop if off canvas
-        ctx.lineTo(canvasX, canvasY);
+    <canvas id="simCanvas" width="900" height="560"></canvas>
+
+    <p style="font-weight:bold;" id="score"></p>
+    <p id="vDisplay"></p>
+  </section>
+
+  <!-- ================= CONTINUITY VISUALIZER ============== -->
+  <section id="continuityApp" class="app">
+    <h2>A₁v₁ = A₂v₂ – Continuity Equation Playground</h2>
+
+    <div id="ceControls">
+      <label>Flow Q (m³/s): <span id="qVal" class="value">--</span></label>
+      <input type="range" id="qRange" min="0.002" max="0.060" step="0.002"/>
+
+      <label style="margin-left:24px;">Inlet r₁ (m): <span id="r1Val" class="value">--</span></label>
+      <input type="range" id="r1Range" min="0.05" max="0.30" step="0.01"/>
+
+      <label style="margin-left:24px;">Outlet r₂ (m): <span id="r2Val" class="value">--</span></label>
+      <input type="range" id="r2Range" min="0.02" max="0.20" step="0.01"/>
+
+      <button id="ceModeBtn" style="margin-left:40px;">⚡ Arrow Mode</button>
+      <button id="ceResetBtn" style="margin-left:10px;">🔄 Reset</button>
+    </div>
+
+    <canvas id="pipeCanvas" width="900" height="420"></canvas>
+
+    <p id="info" style="font-weight:bold;margin-top:8px;"></p>
+  </section>
+
+  <!-- ================= APP SWITCHER SCRIPT ================= -->
+  <script>
+    const selectorBtns = document.querySelectorAll('#appSelector button');
+    selectorBtns.forEach(btn=>btn.addEventListener('click',()=>{
+      selectorBtns.forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const showId = btn.dataset.app === 'fluid' ? 'fluidApp' : 'continuityApp';
+      document.querySelectorAll('.app').forEach(sec=>sec.classList.toggle('active',sec.id===showId));
+    }));
+  </script>
+
+  <!-- ================= ORIGINAL FLUID SIM SCRIPT ========== -->
+  <script>
+    /********************* CONSTANTS *************************/
+    const g      = 9.8;
+    const scale  = 10;
+    const pipeL  = 30;
+    const groundOffset = 20;
+    const Q0     = 0.05; // m³/s fixed flow
+
+    /****************** DOM REFS *****************************/
+    const canvas=document.getElementById('simCanvas');
+    const ctx=canvas.getContext('2d');
+    const angleS=document.getElementById('angle');
+    const radiusS=document.getElementById('radius');
+    const hWaterS=document.getElementById('waterHeight');
+    const hOutletS=document.getElementById('outletHeight');
+    const resetBtn=document.getElementById('resetBtn');
+    const switchBtn=document.getElementById('switchBtn');
+    const angleLbl=document.getElementById('angleVal');
+    const radiusLbl=document.getElementById('radiusVal');
+    const hWaterLbl=document.getElementById('waterHeightVal');
+    const hOutletLbl=document.getElementById('outletHeightVal');
+    const scoreLbl=document.getElementById('score');
+    const vDisp=document.getElementById('vDisplay');
+    const waterBlock=document.getElementById('waterBlock');
+
+    /****************** STATE *******************************/
+    let scenario=0;
+    let targets=[],particles=[],splashes=[];
+    let nozzle={x:10,y:5};
+    let dragging=false,lastTime=null;
+
+    /****************** UTILS *******************************/
+    const rand=(min,max,step=0.1)=>+(min+Math.random()*((max-min)/step|0)*step).toFixed(3);
+
+    function generateTargets(angleDeg,v0,origin){
+      const aRad=angleDeg*Math.PI/180;
+      const T=(v0*Math.sin(aRad)+Math.sqrt(v0*v0*Math.sin(aRad)**2+2*g*origin.y))/g;
+      const Fs=[0.25,0.55,0.85];
+      targets=Fs.map(f=>{
+        const t=T*f;
+        return{
+          x:origin.x+v0*Math.cos(aRad)*t,
+          y:origin.y+v0*Math.sin(aRad)*t-0.5*g*t*t,
+          r:1
+        };
+      });
     }
-    ctx.strokeStyle = "#0077cc";
-    ctx.lineWidth = 2;
-    ctx.stroke();
 
-    // launch point marker
-    ctx.beginPath();
-    ctx.arc(0, canvas.height - 20, 5, 0, 2*Math.PI);
-    ctx.fillStyle = "#cc0000";
-    ctx.fill();
-}
+    /****************** LEVEL BUILD *************************/
+    function newLevel(){
+      particles=[];splashes=[];
+      if(scenario===0){
+        const a=rand(15,75,0.1);const h2=rand(2,10,0.1);const h1=rand(h2+1,35,0.1);const r=rand(0.01,0.04,0.005);
+        angleS.value=a;radiusS.value=r;hWaterS.value=h1;hOutletS.value=h2;
+        const v0=Math.sqrt(2*g*(h1-h2));
+        const origin={x:(pipeL/scale)*Math.cos(a*Math.PI/180),y:h2+(pipeL/scale)*Math.sin(a*Math.PI/180)};
+        generateTargets(a,v0,origin);
+      }else{
+        const a=rand(20,70,0.1);const r=rand(0.01,0.04,0.005);
+        nozzle={x:10,y:5};
+        angleS.value=a;radiusS.value=r;hOutletS.value=nozzle.y;hWaterS.value=0;
+        const v0=Q0/(Math.PI*r*r);
+        generateTargets(a,v0,nozzle);
+      }
+    }
 
-angleSlider.addEventListener('input', draw);
-speedSlider.addEventListener('input', draw);
+    /****************** PARTICLE CLASSES *********************/
+    class Drop{constructor(x,y,vx,vy){this.x=x;this.y=y;this.vx=vx;this.vy=vy;this.alpha=1;this.land=false;}
+      upd(dt){if(!this.land){this.vy-=g*dt;this.x+=this.vx*dt;this.y+=this.vy*dt;if(this.y<=0){this.y=0;this.land=true;makeSplash(this.x,this.y,this.vx);}}else this.alpha-=dt*2;return this.alpha>0;}
+      draw(){ctx.globalAlpha=Math.max(this.alpha,0);const{cX,cY}=toCanvas(this.x,this.y);ctx.beginPath();ctx.arc(cX,cY,3,0,2*Math.PI);ctx.fillStyle='#1c80d0';ctx.fill();ctx.globalAlpha=1;}}
 
-// initial draw
-draw();
-</script>
+    class Splash{constructor(x,y,vx,vy){this.x=x;this.y=y;this.vx=vx;this.vy=vy;this.a=1;}
+      upd(dt){this.vy-=g*dt;this.x+=this.vx*dt;this.y+=this.vy*dt;this.a-=dt*6;return this.a>0;}
+      draw(){ctx.globalAlpha=Math.max(this.a,0);const{cX,cY}=toCanvas(this.x,this.y);ctx.fillStyle='#55aaff';ctx.fillRect(cX-1,cY-1,3,3);ctx.globalAlpha=1;}}
+
+    function makeSplash(x,y,hV){for(let i=0;i<12;i++){const ang=Math.random()*Math.PI;const sp=(0.8+Math.random()*0.8)*(Math.abs(hV)+3);splashes.push(new Splash(x,y,sp*Math.cos(ang),sp*Math.sin(ang)));}}
+
+    /****************** CONVERSIONS *************************/
+    const groundY=canvas.height-groundOffset;
+    function toCanvas(x,y){if(scenario===0){const px=20+40;return{cX:px+x*scale,cY:groundY-y*scale};}return{cX:x*scale,cY:groundY-y*scale};}
+
+    /****************** EMIT *******************************/
+    function emit(){const aD=+angleS.value,aR=aD*Math.PI/180,r=+radiusS.value;let v0,orig;
+      if(scenario===0){const h1=+hWaterS.value,h2=+hOutletS.value;v0=Math.sqrt(2*g*Math.max(h1-h2,0));if(!v0)return;orig={x:(pipeL/scale)*Math.cos(aR),y:h2+(pipeL/scale)*Math.sin(aR)};}else{v0=Q0/(Math.PI*r*r);orig=nozzle;}
+      const vx=v0*Math.cos(aR),vy=v0*Math.sin(aR);const rate=Math.max(2,Math.round(r*100));for(let i=0;i<rate;i++){particles.push(new Drop(orig.x,orig.y,vx,vy));}}
+
+    /****************** RENDER ******************************/
+    function drawStatic(){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.beginPath();ctx.moveTo(0,groundY);ctx.lineTo(canvas.width,groundY);ctx.strokeStyle='#555';ctx.stroke();if(scenario===0){ctx.fillStyle='#add8e6';ctx.fillRect(20,groundY-400,40,400);}}
+
+    function drawPipe(){if(scenario===0){const aR=+angleS.value*Math.PI/180;const baseX=20+40,baseY=groundY-(+hOutletS.value)*scale;const tipX=baseX+pipeL*Math.cos(aR),tipY=baseY-pipeL*Math.sin(aR);ctx.beginPath();ctx.moveTo(baseX,baseY);ctx.lineTo(tipX,tipY);ctx.lineWidth=5;ctx.strokeStyle='#000';ctx.stroke();ctx.beginPath();ctx.ellipse(tipX,tipY,6,3,-aR,0,2*Math.PI);ctx.fillStyle='#333';ctx.fill();}else{ctx.strokeStyle='#444';ctx.lineWidth=5;ctx.beginPath();for(let i=0;i<=80;i++){const t=i/80;const x=nozzle.x*t;const y=nozzle.y*(t*t*(3-2*t));const{cX,cY}=toCanvas(x,y);i?ctx.lineTo(cX,cY):ctx.moveTo(cX,cY);}ctx.stroke();const{cX,cY}=toCanvas(nozzle.x,nozzle.y);ctx.beginPath();ctx.arc(cX,cY,8,0,2*Math.PI);ctx.fillStyle='#222';ctx.fill();ctx.beginPath();ctx.moveTo(cX,cY);const aR=+angleS.value*Math.PI/180;ctx.lineTo(cX+20*Math.cos(aR),cY-20*Math.sin(aR));ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}}
+
+    function drawPrediction(){const aD=+angleS.value,aR=aD*Math.PI/180;let v0,origin;
+      if(scenario===0){const h1=+hWaterS.value,h2=+hOutletS.value;v0=Math.sqrt(2*g*Math.max(h1-h2,0));if(!v0)return;origin={x:(pipeL/scale)*Math.cos(aR),y:h2+(pipeL/scale)*Math.sin(aR)};}else{v0=Q0/(Math.PI*radiusS.value*radiusS.value);origin=nozzle;}
+      const T=(v0*Math.sin(aR)+Math.sqrt(v0*v0*Math.sin(aR)**2+2*g*origin.y))/g;ctx.setLineDash([5,5]);ctx.beginPath();const tip=toCanvas(origin.x,origin.y);ctx.moveTo(tip.cX,tip.cY);for(let t=0;t<=T;t+=T/250){const x=origin.x+v0*Math.cos(aR)*t;const y=origin.y+v0*Math.sin(aR)*t-0.5*g*t*t;const{cX,cY}=toCanvas(x,y);if(cX>canvas.width||cY>groundY)break;ctx.lineTo(cX,cY);}ctx.strokeStyle='#0077cc';ctx.lineWidth=1;ctx.stroke();ctx.setLineDash([]);}
+
+    function drawFrame(){drawStatic();if(scenario===0){ctx.fillStyle='#87cefa';ctx.fillRect(20,groundY-(+hWaterS.value)*scale,40,(+hWaterS.value)*scale);}drawPipe();drawPrediction();particles.forEach(p=>p.draw());splashes.forEach(s=>s.draw());drawTargets();drawUI();}
+
+    function drawTargets(){const passed=targets.map(()=>false);particles.forEach(p=>{targets.forEach((tg,i)=>{if(!passed[i]&&!p.land&&Math.hypot(p.x-tg.x,p.y-tg.y)<tg.r)passed[i]=true;});});targets.forEach((tg,i)=>{const{cX,cY}=toCanvas(tg.x,tg.y);ctx.beginPath();ctx.arc(cX,cY,tg.r*scale,0,2*Math.PI);ctx.lineWidth=2;ctx.strokeStyle=passed[i]?'green':'red';ctx.stroke();});scoreLbl.textContent=passed.every(Boolean)?'Perfect!':'Passed '+passed.filter(Boolean).length+' / '+targets.length;}
+
+    function drawUI(){angleLbl.textContent=(+angleS.value).toFixed(1);radiusLbl.textContent=(+radiusS.value).toFixed(3);if(scenario===0){waterBlock.style.display='inline';hWaterLbl.textContent=(+hWaterS.value).toFixed(1);}else{waterBlock.style.display='none';hWaterLbl.textContent='--';}hOutletLbl.textContent=(scenario===0?(+hOutletS.value):nozzle.y).toFixed(1);const v0=scenario===0?Math.sqrt(2*g*Math.max((+hWaterS.value)-(+hOutletS.value),0)):Q0/(Math.PI*radiusS.value*radiusS.value);vDisp.textContent=`v ≈ ${v0.toFixed(2)} m/s`;}
+
+    /****************** MAIN LOOP ***************************/
+    function step(ts){if(!lastTime)lastTime=ts;const dt=(ts-lastTime)/1000;lastTime=ts;emit();particles=particles.filter(p=>p.upd(dt));splashes=splashes.filter(s=>s.upd(dt));drawFrame();requestAnimationFrame(step);}    
+
+    /****************** INTERACTION *************************/
+    canvas.addEventListener('mousedown',e=>{if(scenario!==1)return;const rect=canvas.getBoundingClientRect();const x=(e.clientX-rect.left)/scale;const y=(groundY-(e.clientY-rect.top))/scale;if(Math.hypot(x-nozzle.x,y-nozzle.y)<0.8)dragging=true;});
+    window.addEventListener('mousemove',e=>{if(!dragging)return;const rect=canvas.getBoundingClientRect();nozzle.x=Math.min(Math.max(4,(e.clientX-rect.left)/scale),20);nozzle.y=Math.min(Math.max(1,(groundY-(e.clientY-rect.top))/scale),15);hOutletS.value=nozzle.y;});
+    window.addEventListener('mouseup',()=>dragging=false);
+    resetBtn.addEventListener('click',newLevel);
+    switchBtn.addEventListener('click',()=>{scenario=(scenario+1)%2;newLevel();});
+
+    /****************** BOOT *******************************/
+    newLevel();requestAnimationFrame(step);
+  </script>
+
+  <!-- ================= CONTINUITY VISUALIZER SCRIPT ===== -->
+  <script>
+  /********* Constants *********/
+  const ceScale = 100, L = 6, plateau = 0.25;
+  const rowsPerM = 18;
+  const wallGap = 0.92;        // particle inset
+  const arrowGap = 0.80;       // arrows further in
+  const DESIRED_SPACING = 0.25, DT_MIN = 0.05, DT_MAX = 0.4;
+  const MAX_PARTS = 2500;
+
+  /********* DOM refs *********/
+  const cvs = document.getElementById('pipeCanvas');
+  const ctx2 = cvs.getContext('2d');
+  const qR = document.getElementById('qRange');
+  const r1R = document.getElementById('r1Range');
+  const r2R = document.getElementById('r2Range');
+  const modeBtn = document.getElementById('ceModeBtn');
+  const resetBtn2 = document.getElementById('ceResetBtn');
+  const qLbl = document.getElementById('qVal');
+  const r1Lbl = document.getElementById('r1Val');
+  const r2Lbl = document.getElementById('r2Val');
+  const infoP = document.getElementById('info');
+
+  /********* State *********/
+  let mode = 'particle';
+  let parts = [];
+  let spawnClock = 0, spawnDt = 0.2;
+
+  /********* Helpers *********/
+  const toC = (x, y) => ({ cX: 60 + x * ceScale, cY: cvs.height / 2 - y * ceScale });
+  function rProf(x, r1, r2) {
+    const l = plateau * L, r = (1 - plateau) * L;
+    if (x < l) return r1;
+    if (x > r) return r2;
+    const u = (x - l) / (r - l);
+    return r1 + (r2 - r1) * (u * u * (3 - 2 * u));
+  }
+
+  /********* Drawing *********/
+  function walls(r1, r2) {
+    ctx2.strokeStyle = '#000'; ctx2.lineWidth = 2;
+    ctx2.beginPath();
+    for (let i = 0; i <= 300; i++) {
+      const x = (i / 300) * L, r = rProf(x, r1, r2);
+      const { cX, cY } = toC(x, r);
+      i ? ctx2.lineTo(cX, cY) : ctx2.moveTo(cX, cY);
+    }
+    ctx2.stroke();
+    ctx2.beginPath();
+    for (let i = 0; i <= 300; i++) {
+      const x = (i / 300) * L, r = rProf(x, r1, r2);
+      const { cX, cY } = toC(x, -r);
+      i ? ctx2.lineTo(cX, cY) : ctx2.moveTo(cX, cY);
+    }
+    ctx2.stroke();
+  }
+
+  function arrows(Q, r1, r2) {
+    ctx2.strokeStyle = '#1c80d0'; ctx2.lineWidth = 2;
+    const cols = 12; const eps = 0.02; // for slope approximation
+
+    for (let i = 0; i <= cols; i++) {
+      const x = (i / cols) * L;
+      const r = rProf(x, r1, r2);
+      // local derivative of radius
+      const rL = rProf(Math.max(0, x - eps), r1, r2);
+      const rR = rProf(Math.min(L, x + eps), r1, r2);
+      const drdx = (rR - rL) / (2 * eps);
+      const v = Q / (Math.PI * r * r);
+      const baseLen = Math.min(1.2, 0.08 + v * 0.25);
+      const lines = Math.max(2, Math.round(r * rowsPerM / 1.5));
+
+      for (let k = 0; k < lines; k++) {
+        const frac = (k - (lines - 1) / 2) / ((lines - 1) / 2);
+        const yWorld = frac * r * arrowGap;
+
+        // direction vector tangential to streamline
+        const slope = frac * drdx;                 // dy/dx at this streamline
+        const norm = Math.sqrt(1 + slope * slope);
+        const dirX = 1 / norm, dirY = slope / norm;
+
+        const { cX, cY } = toC(x, yWorld);
+        const endX = cX + dirX * baseLen * ceScale;
+        const endY = cY - dirY * baseLen * ceScale; // minus because canvas y down
+
+        ctx2.beginPath(); ctx2.moveTo(cX, cY); ctx2.lineTo(endX, endY); ctx2.stroke();
+        // arrow head
+        const headBackX = endX - dirX * 5, headBackY = endY + dirY * 5;
+        const perpX = -dirY, perpY = dirX;
+        ctx2.beginPath();
+        ctx2.moveTo(endX, endY);
+        ctx2.lineTo(headBackX + perpX * 3, headBackY + perpY * 3);
+        ctx2.lineTo(headBackX - perpX * 3, headBackY - perpY * 3);
+        ctx2.closePath(); ctx2.fillStyle = '#1c80d0'; ctx2.fill();
+      }
+    }
+  }
+
+  /********* Particles *********/
+  class P {
+    constructor(frac) { this.x = 0; this.f = frac; this.remove = false; }
+    update(dt, r1, r2, Q) {
+      const r = rProf(this.x, r1, r2);
+      const v = Q / (Math.PI * r * r);
+      this.x += v * dt;
+      if (this.x > L) { this.remove = true; return; }
+      this.y = this.f * r * wallGap;
+    }
+    draw() { const { cX, cY } = toC(this.x, this.y); ctx2.beginPath(); ctx2.arc(cX, cY, 2, 0, 6.283); ctx2.fillStyle = '#0080ff'; ctx2.fill(); }
+  }
+  function spawnRow(rIn) {
+    const count = Math.max(2, Math.round(rIn * rowsPerM));
+    for (let i = 0; i < count; i++) parts.push(new P(Math.random() * 2 - 1));
+    if (parts.length > MAX_PARTS) parts.splice(0, parts.length - MAX_PARTS);
+  }
+
+  /********* Animation *********/
+  let last = null;
+  function tick(ts) {
+    if (!last) last = ts; const dt = (ts - last) / 1000; last = ts;
+    const Q = +qR.value, r1 = +r1R.value, r2 = +r2R.value;
+    const vIn = Q / (Math.PI * r1 * r1);
+    spawnDt = Math.max(DT_MIN, Math.min(DT_MAX, DESIRED_SPACING / vIn));
+    if (mode === 'particle') {
+      spawnClock += dt; while (spawnClock >= spawnDt) { spawnClock -= spawnDt; spawnRow(r1); }
+      parts.forEach(p => p.update(dt, r1, r2, Q)); parts = parts.filter(p => !p.remove);
+    }
+    ctx2.clearRect(0, 0, cvs.width, cvs.height); walls(r1, r2);
+    if (mode === 'arrow') arrows(Q, r1, r2); else parts.forEach(p => p.draw());
+    requestAnimationFrame(tick);
+  }
+
+  /********* UI *********/
+  function syncLabels() { qLbl.textContent = (+qR.value).toFixed(3); r1Lbl.textContent = (+r1R.value).toFixed(2); r2Lbl.textContent = (+r2R.value).toFixed(2); infoP.textContent = `${mode==='arrow'?'Arrow':'Particle'} mode`; }
+  qR.oninput = r1R.oninput = r2R.oninput = syncLabels;
+  modeBtn.onclick = () => { mode = mode === 'arrow' ? 'particle' : 'arrow'; modeBtn.textContent = mode === 'arrow' ? '⚡ Arrow Mode' : '💧 Particle Mode'; syncLabels(); };
+  resetBtn2.onclick = () => { qR.value = '0.010'; r1R.value = '0.25'; r2R.value = '0.06'; parts = []; spawnClock = 0; syncLabels(); };
+
+  /********* Boot *********/
+  (() => { qR.value = '0.010'; r1R.value = '0.25'; r2R.value = '0.06'; syncLabels(); spawnRow(+r1R.value); requestAnimationFrame(tick); })();
+  </script>
 </body>
 </html>
