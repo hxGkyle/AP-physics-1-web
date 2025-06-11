@@ -1,101 +1,388 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Fluid & Continuity Simulators</title>
+  <meta charset="UTF-8">
+  <title>Fluid Mechanics Simulators</title>
   <style>
     /* ------ shared layout ------ */
-    body{font-family:Arial,Helvetica,sans-serif;margin:20px}
-    #appSelector{margin-bottom:18px}
-    #appSelector button{margin-right:12px;padding:6px 14px;font-size:1rem;cursor:pointer;border:1px solid #888;border-radius:6px;background:#f5f5f5;transition:background .2s}
-    #appSelector button.active{background:#0077cc;color:#fff}
-    .app{display:none}
-    .app.active{display:block}
-
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 20px;
+      background-color: #f0f8ff;
+      color: #333;
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #1a5276;
+    }
+    
+    #appSelector {
+      margin-bottom: 25px;
+      text-align: center;
+    }
+    
+    #appSelector button {
+      margin: 0 10px 10px 0;
+      padding: 8px 16px;
+      font-size: 1rem;
+      cursor: pointer;
+      border: 1px solid #3498db;
+      border-radius: 4px;
+      background: #eaf6ff;
+      transition: background .2s;
+    }
+    
+    #appSelector button.active {
+      background: #3498db;
+      color: #fff;
+    }
+    
+    .app {
+      display: none;
+      padding: 15px;
+      border: 1px solid #bdc3c7;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .app.active {
+      display: block;
+    }
+    
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+      color: #2c3e50;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #ecf0f1;
+    }
+    
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #bdc3c7;
+    }
+    
     /* ------ Fluid Projectile styles ------ */
-    #fluidApp #controls{margin-bottom:10px}
-    #fluidApp label{margin-right:10px}
-    #fluidApp .value{display:inline-block;width:4ch;text-align:right;font-variant-numeric:tabular-nums}
-    #fluidApp canvas{border:1px solid #ccc;cursor:crosshair}
-
+    #fluidApp #controls {
+      margin-bottom: 15px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border: 1px solid #e1e4e8;
+    }
+    
+    #fluidApp label {
+      margin-right: 10px;
+      font-size: 0.9rem;
+    }
+    
+    #fluidApp .value {
+      display: inline-block;
+      width: 4ch;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: bold;
+      color: #2980b9;
+    }
+    
+    #fluidApp input[type="range"] {
+      width: 150px;
+      margin-right: 15px;
+    }
+    
+    #fluidApp .button-group {
+      display: inline-block;
+      margin-left: 20px;
+    }
+    
+    #fluidApp button {
+      margin-left: 10px;
+      padding: 6px 12px;
+      border: 1px solid #95a5a6;
+      border-radius: 4px;
+      background: #ecf0f1;
+      cursor: pointer;
+    }
+    
+    #fluidApp button:hover {
+      background: #d6eaf8;
+    }
+    
+    #fluidStats {
+      background: #e8f4fc;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #bbdefb;
+      border-radius: 4px;
+      font-size: 0.95rem;
+    }
+    
+    #fluidStats .formula {
+      font-family: 'Courier New', monospace;
+      margin-top: 5px;
+      color: #2c3e50;
+      background: #f0f7ff;
+      padding: 5px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    
     /* ------ Continuity Equation styles ------ */
-    #continuityApp #ceControls{margin-bottom:10px}
-    #continuityApp label{margin-right:14px}
-    #continuityApp .value{display:inline-block;width:5.5ch;text-align:right;font-variant-numeric:tabular-nums}
-    #continuityApp canvas{border:1px solid #888}
+    #continuityApp #ceControls {
+      margin-bottom: 15px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border: 1px solid #e1e4e8;
+    }
+    
+    #continuityApp label {
+      margin-right: 14px;
+      font-size: 0.9rem;
+    }
+    
+    #continuityApp .value {
+      display: inline-block;
+      width: 5.5ch;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: bold;
+      color: #2980b9;
+    }
+    
+    #continuityApp input[type="range"] {
+      width: 150px;
+      margin-right: 20px;
+    }
+    
+    #continuityApp .button-group {
+      display: inline-block;
+      margin-left: 20px;
+    }
+    
+    #ceInfoDisplay {
+      background: #e8f4fc;
+      padding: 15px;
+      margin-bottom: 15px;
+      border: 1px solid #bbdefb;
+      border-radius: 4px;
+      font-size: 0.95rem;
+    }
+    
+    #ceInfoDisplay .formula {
+      font-family: 'Courier New', monospace;
+      margin: 8px 0;
+      color: #2c3e50;
+      background: #f0f7ff;
+      padding: 8px;
+      border-radius: 4px;
+      display: block;
+      text-align: center;
+    }
+    
+    /* ------ Modal styles ------ */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      background: #fff;
+      padding: 25px;
+      border-radius: 8px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      position: relative;
+    }
+    
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #7f8c8d;
+    }
+    
+    .close-modal:hover {
+      color: #e74c3c;
+    }
+    
+    .modal h3 {
+      color: #2980b9;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    
+    .modal p {
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+    
+    .modal .formula {
+      background: #f8f9fa;
+      padding: 10px;
+      border-left: 3px solid #3498db;
+      font-family: 'Courier New', monospace;
+      margin: 15px 0;
+    }
   </style>
 </head>
 <body>
-  <h1>Fluid Mechanics Playground</h1>
+  <h1>Fluid Mechanics Simulators</h1>
+  
   <div id="appSelector">
     <button data-app="fluid" class="active">💧 Fluid Projectile Simulator</button>
     <button data-app="continuity">➡️ Continuity Visualizer</button>
   </div>
 
+  <!-- Fluid Projectile Modal -->
+  <div id="fluidModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h3>Fluid Projectile Simulator</h3>
+      <p>This demonstration explores the behavior of fluid projected from a pressurized container through a nozzle, simulating projectile motion governed by fluid mechanics and kinematics. The simulator visualizes the fluid's parabolic trajectory as it exits the nozzle and follows a projectile path due to gravity.</p>
+      <p>The goal is to optimize parameters so that the stream hits a designated target or splashes at a specific point, as seen in the diagram, where the water perfectly lands on the intended spot. This visualization demonstrates how fluid dynamics and physics principles can be applied in real-world systems like fountains, irrigation, or firefighting systems.</p>
+      <div class="formula">v = √(2gh)</div>
+      <p>Where <strong>v</strong> is the exit velocity, <strong>g</strong> is gravity (9.8 m/s²), and <strong>h</strong> is the height difference between the water surface and the nozzle.</p>
+    </div>
+  </div>
+  
+  <!-- Continuity Modal -->
+  <div id="continuityModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h3>Continuity Equation Visualizer</h3>
+      <p>This simulation demonstrates the continuity equation in fluid mechanics, which is expressed as:</p>
+      <div class="formula">A₁V₁ = A₂V₂</div>
+      <p>This principle states that for an incompressible fluid flowing in a closed system, the product of the cross-sectional area (A) and the velocity (v) of the fluid remains constant along the stream. The image visualizes this concept using a narrowing pipe.</p>
+      <p>As the pipe narrows, the cross-sectional area decreases, causing the fluid velocity to increase proportionally to maintain a constant flow rate. This principle is fundamental in fluid dynamics and explains phenomena like the Venturi effect.</p>
+      <div class="formula">Q = A × v = πr² × v</div>
+      <p>Where <strong>Q</strong> is the volumetric flow rate, <strong>A</strong> is the cross-sectional area, and <strong>v</strong> is the fluid velocity.</p>
+    </div>
+  </div>
+
   <!-- ================= FLUID PROJECTILE SIM ================= -->
   <section id="fluidApp" class="app active">
     <h2>Fluid Projectile Simulator</h2>
+    
+    <div id="fluidStats">
+      <div><strong>Targets:</strong> <span id="score">Passed 0 / 3</span></div>
+      <div><strong>Velocity:</strong> <span id="vDisplay">v ≈ -- m/s</span></div>
+      <div class="formula">v = √(2gh) = √(2 × 9.8 × <span id="h-value">--</span>)</div>
+    </div>
 
     <div id="controls">
-      <label>Angle θ: <span id="angleVal" class="value">--</span>°</label>
+      <label>Angle θ: <span id="angleVal" class="value">--</span>°</label>
       <input type="range" id="angle" min="5" max="85" step="0.1" />
-
-      <span id="radiusBlock" style="margin-left:20px;">
-        <label>Outlet Radius r: <span id="radiusVal" class="value">--</span> m</label>
+      
+      <span id="radiusBlock">
+        <label>Outlet Radius r: <span id="radiusVal" class="value">--</span> m</label>
         <input type="range" id="radius" min="0.024" max="0.05" step="0.002" />
       </span>
-
-      <label id="waterBlock" style="margin-left:20px;">Water Height h₁: <span id="waterHeightVal" class="value">--</span> m
+      
+      <label id="waterBlock">Water Height h₁: <span id="waterHeightVal" class="value">--</span> m
         <input type="range" id="waterHeight" min="0" max="40" step="0.1" />
       </label>
-
-      <span id="outletBlock" style="margin-left:20px;">
-        <label>Outlet Height h₂: <span id="outletHeightVal" class="value">--</span> m</label>
+      
+      <span id="outletBlock">
+        <label>Outlet Height h₂: <span id="outletHeightVal" class="value">--</span> m</label>
         <input type="range" id="outletHeight" min="0" max="20" step="0.1" />
       </span>
-
-      <button id="resetBtn" style="margin-left:30px;">🔄 New Level</button>
-      <button id="switchBtn" style="margin-left:10px;">▶ Next Scenario</button>
+      
+      <div class="button-group">
+        <button id="resetBtn">🔄 New Level</button>
+        <button id="switchBtn">▶ Next Scenario</button>
+        <button id="infoBtn">ℹ️ Explanation</button>
+      </div>
     </div>
 
     <canvas id="simCanvas" width="900" height="560"></canvas>
-
-    <p style="font-weight:bold;" id="score"></p>
-    <p id="vDisplay"></p>
   </section>
 
   <!-- ================= CONTINUITY VISUALIZER ============== -->
   <section id="continuityApp" class="app">
     <h2>A₁v₁ = A₂v₂ – Continuity Equation Playground</h2>
+    
+    <div id="ceInfoDisplay">
+      <div class="formula">Continuity Equation: A₁v₁ = A₂v₂</div>
+      <div class="formula">Flow Rate: Q = A × v = πr² × v</div>
+      <div class="formula">v₁ = Q / (π × r₁²) = <span id="v1Value">--</span> m/s</div>
+      <div class="formula">v₂ = Q / (π × r₂²) = <span id="v2Value">--</span> m/s</div>
+    </div>
 
     <div id="ceControls">
-      <label>Flow Q (m³/s): <span id="qVal" class="value">--</span></label>
+      <label>Flow Q (m³/s): <span id="qVal" class="value">--</span></label>
       <input type="range" id="qRange" min="0.002" max="0.060" step="0.002"/>
-
-      <label style="margin-left:24px;">Inlet r₁ (m): <span id="r1Val" class="value">--</span></label>
+      
+      <label style="margin-left:24px;">Inlet r₁ (m): <span id="r1Val" class="value">--</span></label>
       <input type="range" id="r1Range" min="0.05" max="0.30" step="0.01"/>
-
-      <label style="margin-left:24px;">Outlet r₂ (m): <span id="r2Val" class="value">--</span></label>
+      
+      <label style="margin-left:24px;">Outlet r₂ (m): <span id="r2Val" class="value">--</span></label>
       <input type="range" id="r2Range" min="0.02" max="0.20" step="0.01"/>
-
-      <button id="ceModeBtn" style="margin-left:40px;">⚡ Arrow Mode</button>
-      <button id="ceResetBtn" style="margin-left:10px;">🔄 Reset</button>
+      
+      <div class="button-group">
+        <button id="ceModeBtn">⚡ Arrow Mode</button>
+        <button id="ceResetBtn">🔄 Reset</button>
+        <button id="ceInfoBtn">ℹ️ Explanation</button>
+      </div>
     </div>
 
     <canvas id="pipeCanvas" width="900" height="420"></canvas>
-
-    <p id="info" style="font-weight:bold;margin-top:8px;"></p>
   </section>
 
-  <!-- ================= APP SWITCHER SCRIPT ================= -->
+  <!-- ================= SCRIPTS ================= -->
   <script>
+    // App Switcher
     const selectorBtns = document.querySelectorAll('#appSelector button');
-    selectorBtns.forEach(btn=>btn.addEventListener('click',()=>{
-      selectorBtns.forEach(b=>b.classList.remove('active'));
+    selectorBtns.forEach(btn => btn.addEventListener('click', () => {
+      selectorBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const showId = btn.dataset.app === 'fluid' ? 'fluidApp' : 'continuityApp';
-      document.querySelectorAll('.app').forEach(sec=>sec.classList.toggle('active',sec.id===showId));
+      document.querySelectorAll('.app').forEach(sec => sec.classList.toggle('active', sec.id === showId));
     }));
+    
+    // Modal functionality
+    const fluidModal = document.getElementById('fluidModal');
+    const continuityModal = document.getElementById('continuityModal');
+    const closeButtons = document.querySelectorAll('.close-modal');
+    
+    document.getElementById('infoBtn').addEventListener('click', () => {
+      fluidModal.style.display = 'flex';
+    });
+    
+    document.getElementById('ceInfoBtn').addEventListener('click', () => {
+      continuityModal.style.display = 'flex';
+    });
+    
+    closeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        fluidModal.style.display = 'none';
+        continuityModal.style.display = 'none';
+      });
+    });
+    
+    window.addEventListener('click', (e) => {
+      if (e.target === fluidModal) fluidModal.style.display = 'none';
+      if (e.target === continuityModal) continuityModal.style.display = 'none';
+    });
   </script>
 
   <!-- ================= FLUID SIM SCRIPT =================== -->
@@ -121,6 +408,7 @@
     const waterBlock = document.getElementById('waterBlock');
     const radiusBlock = document.getElementById('radiusBlock');
     const outletBlock = document.getElementById('outletBlock');
+    const hValue = document.getElementById('h-value');
 
     /****************** STATE *******************************/
     let scenario = 0; // 0: reservoir, 1: fixed-flow
@@ -277,7 +565,7 @@
       targets.forEach((tg, i) => {
         const { cX, cY } = toCanvas(tg.x, tg.y); ctx.beginPath(); ctx.arc(cX, cY, tg.r * scale, 0, 2 * Math.PI); ctx.lineWidth = 2; ctx.strokeStyle = passed[i] ? 'green' : 'red'; ctx.stroke();
       });
-      scoreLbl.textContent = passed.every(Boolean) ? 'Perfect!' : `Passed ${passed.filter(Boolean).length} / ${targets.length}`;
+      scoreLbl.textContent = `Passed ${passed.filter(Boolean).length} / ${targets.length}`;
     }
 
     function syncBlocks() {
@@ -290,7 +578,16 @@
       radiusLbl.textContent = (+radiusS.value).toFixed(3);
       hWaterLbl.textContent = (scenario === 0 ? (+hWaterS.value).toFixed(1) : '--');
       hOutletLbl.textContent = (scenario === 0 ? (+hOutletS.value) : nozzle.y).toFixed(1);
-      const v0 = scenario === 0 ? Math.sqrt(2 * g * Math.max((+hWaterS.value) - (+hOutletS.value), 0)) : Q0 / (Math.PI * radiusS.value * radiusS.value);
+      
+      let v0 = 0;
+      if (scenario === 0) {
+        const h1 = +hWaterS.value, h2 = +hOutletS.value;
+        v0 = Math.sqrt(2 * g * Math.max(h1 - h2, 0));
+        hValue.textContent = (h1 - h2).toFixed(1);
+      } else {
+        v0 = Q0 / (Math.PI * radiusS.value * radiusS.value);
+      }
+      
       vDisp.textContent = `v ≈ ${v0.toFixed(2)} m/s`;
       syncBlocks();
     }
@@ -360,7 +657,8 @@
     const qLbl = document.getElementById('qVal');
     const r1Lbl = document.getElementById('r1Val');
     const r2Lbl = document.getElementById('r2Val');
-    const infoP = document.getElementById('info');
+    const v1Value = document.getElementById('v1Value');
+    const v2Value = document.getElementById('v2Value');
 
     /********* State *********/
     let mode = 'particle';
@@ -430,6 +728,12 @@
       if (!last) last = ts; const dt = (ts - last) / 1000; last = ts;
       const Q = +qR.value, r1 = +r1R.value, r2 = +r2R.value;
       const vIn = Q / (Math.PI * r1 * r1);
+      const vOut = Q / (Math.PI * r2 * r2);
+      
+      // Update velocity displays
+      v1Value.textContent = vIn.toFixed(2);
+      v2Value.textContent = vOut.toFixed(2);
+      
       spawnDt = Math.max(DT_MIN, Math.min(DT_MAX, DESIRED_SPACING / vIn));
       if (mode === 'particle') {
         spawnClock += dt; while (spawnClock >= spawnDt) { spawnClock -= spawnDt; spawnRow(r1); }
@@ -445,7 +749,6 @@
       qLbl.textContent = (+qR.value).toFixed(3);
       r1Lbl.textContent = (+r1R.value).toFixed(2);
       r2Lbl.textContent = (+r2R.value).toFixed(2);
-      infoP.textContent = `${mode === 'arrow' ? 'Arrow' : 'Particle'} mode`;
     }
     qR.oninput = r1R.oninput = r2R.oninput = syncLabels;
     modeBtn.onclick = () => { mode = mode === 'arrow' ? 'particle' : 'arrow'; modeBtn.textContent = mode === 'arrow' ? '⚡ Arrow Mode' : '💧 Particle Mode'; syncLabels(); };
