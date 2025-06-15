@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>welcome Page</title>
+</head>
+<body>
+    <a href="/ap-phy1/index.html">AP physics 1</a>
+    <a href="/ap-bio/index.html">AP Bio</a>
+</body>
+</html>
