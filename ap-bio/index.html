@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Antibody Workshop – B‑Cell Edition</title>
+<style>
+  *,*:before,*:after{box-sizing:border-box;margin:0;padding:0;}
+  html, body { height: 100%; }
+  body{
+    font-family:Arial,Helvetica,sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    background:radial-gradient(circle at center,#e9f5ff 0%,#c9e4f7 45%,#b0d8f1 100%);
+    color:#073b4c;
+  }
+  header{text-align:center;padding:1rem 2rem;background:#118ab2;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.14);}  
+  header h1{font-size:1.9rem;margin-bottom:.3rem;}header p{font-size:1rem;opacity:.85;}
+  .main{flex:1;min-height:0;padding:1rem 2rem;display:grid;gap:1rem;grid-template-columns:150px 150px 1fr 320px;}
+  .panel{background:rgba(255,255,255,.85);border-radius:14px;padding:1rem;display:flex;flex-direction:column;min-height:0;overflow:hidden;backdrop-filter:blur(3px);box-shadow:0 2px 6px rgba(0,0,0,.08);}  
+  .panel h2{font-size:1.1rem;margin-bottom:.6rem;color:#118ab2;}
+  .vlist{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;padding-right:.3rem;scrollbar-width:auto; max-height: 100%;}
+  .vlist::-webkit-scrollbar{width:6px;} .vlist::-webkit-scrollbar-thumb{background:#8ecae6;border-radius:3px;}
+  .chain-img{
+    position:relative;
+    width:100%;
+    height:100px;
+    min-height:100px;
+    max-height:100px;
+    border:2px solid transparent;
+    border-radius:8px;
+    background:#fff;
+    object-fit:contain;
+    cursor:pointer;
+    transition:border .2s;
+  }
+  .chain-img:hover{border-color:#118ab2;}  
+  .chain-img.selected{border-color:#118ab2;}
+  .chain-img.missing{border-style:dashed;border-color:#bfd7ea;background:#f0f6fc;}
+  .chain-img.missing::after{content:attr(alt);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#8a98b9;}
+  #center-panel{position:relative;align-items:center;justify-content:center;gap:1rem;}
+  .slot{width:200px;height:200px;border:2px dashed #bfd7ea;border-radius:12px;background:rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+  .slot img{position:absolute;width:90%;height:auto;object-fit:contain;}
+  .chain-slot-container{display:flex;gap:1.5rem;}
+  .chain-slot-container .slot{width:160px;height:200px;}
+  @keyframes flash{0%{opacity:0;}50%{opacity:.9;}100%{opacity:0;}}
+  .flash-effect{position:absolute;inset:0;background:rgba(255,215,0,.45);pointer-events:none;border-radius:inherit;animation:flash .8s ease-out forwards;}
+  #result-panel{display:flex;flex-direction:column;}
+  #result-display{flex:1;display:flex;align-items:center;justify-content:center;font-size:.9rem;text-align:center;border:2px dashed #8ecae6;border-radius:10px;background:rgba(255,255,255,.45);padding:.5rem;}
+  #check-btn{margin-top:.8rem;align-self:center;}
+  .bottom-bar{padding:.8rem 2rem;background:#d3eafd;display:flex;justify-content:space-between;align-items:center;box-shadow:0 -2px 6px rgba(0,0,0,.05);}  
+  .bottom-bar button{padding:.5rem 1.3rem;border:none;border-radius:6px;font-size:.9rem;font-weight:600;cursor:pointer;background:#118ab2;color:#fff;transition:background .2s;}  
+  .bottom-bar button:hover{background:#0e799c;}
+  
+  /* 恒定区线条样式 */
+  .constant-line {
+    position: absolute;
+    background: #bfd7ea;
+    z-index: -1;
+  }
+  .light-constant-box {
+    position: absolute;
+    border: 2px solid #bfd7ea;
+    border-radius: 12px;
+    pointer-events: none;
+    z-index: -1;
+  }
+  .heavy-constant-line {
+    position: absolute;
+    background: #bfd7ea;
+    z-index: -1;
+  }
+  
+  /* 抗原螺杆样式 */
+  .antigen-screw {
+    position: absolute;
+    background: #bfd7ea;
+    z-index: -1;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Antibody Workshop – B‑Cell Mode</h1>
+  <p>Select heavy & light chains, then test binding.</p>
+</header>
+<section class="main">
+  <aside class="panel">
+    <h2>Heavy</h2>
+    <div id="heavy-list" class="vlist"></div>
+  </aside>
+  <aside class="panel">
+    <h2>Light</h2>
+    <div id="light-list" class="vlist"></div>
+  </aside>
+  <section class="panel" id="center-panel">
+    <div id="antigen-slot" class="slot">Ag1</div>
+    <div class="chain-slot-container" style="display:flex;gap:20px;margin-top:1rem;position:relative;">
+      <!-- 轻链框 -->
+      <div id="light-slot" class="slot">Light</div>
+      <!-- 重链V/D/J -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <div id="slot-heavy-v" class="slot" style="width:160px;height:160px;">V</div>
+        <div id="slot-heavy-d" class="slot" style="width:160px;height:160px;">D</div>
+        <div id="slot-heavy-j" class="slot" style="width:160px;height:160px;">J</div>
+      </div>
+    </div>
+  </section>
+  <aside class="panel" id="result-panel">
+    <h2>Binding Result</h2>
+    <div id="result-display">Awaiting assembly…</div>
+    <button id="check-btn">Check Binding</button>
+  </aside>
+</section>
+<div class="bottom-bar">
+  <div>
+    <button id="reset-btn">Reset</button>
+    <button id="save-btn" style="margin-left:.6rem;">Save Antibody</button>
+  </div>
+  <button id="next-antigen-btn">Next Antigen</button>
+</div>
+<script>
+// 创建图像元素
+function createImg(src,alt){
+  const img=new Image();
+  img.src=src;img.alt=alt;img.className='chain-img';img.dataset.chainId=alt;
+  img.onerror=()=>{img.classList.add('missing');img.removeAttribute('src');};
+  return img;
+}
+
+// 初始化链列表
+const heavyList=document.getElementById('heavy-list');
+const lightList=document.getElementById('light-list');
+for(let i=1;i<=10;i++){
+  heavyList.appendChild(createImg(`css/heavy_H${i}.svg`,`H${i}`));
+  lightList.appendChild(createImg(`css/light_L${i}.svg`,`L${i}`));
+}
+
+// 状态变量
+let heavySel=null,lightSel=null;
+const heavySlotsOrder=['slot-heavy-v','slot-heavy-d','slot-heavy-j'];
+let heavyFillIndex=0;
+const heavySlot=document.getElementById('slot-heavy-v');
+const lightSlot=document.getElementById('light-slot');
+const resultDisp=document.getElementById('result-display');
+let currentAg='Ag1';
+
+// 绘制恒定区结构
+function drawConstantRegion() {
+  // 移除之前的恒定区元素
+  document.querySelectorAll('.constant-line, .light-constant-box, .heavy-constant-line, .antigen-screw').forEach(el => el.remove());
+  
+  // 获取位置信息
+  const centerPanel = document.getElementById('center-panel');
+  const lightSlotEl = document.getElementById('light-slot');
+  const heavyVSlot = document.getElementById('slot-heavy-v');
+  const heavyDSlot = document.getElementById('slot-heavy-d');
+  const heavyJSlot = document.getElementById('slot-heavy-j');
+  const antigenSlotEl = document.getElementById('antigen-slot');
+  
+  // 计算位置
+  const lightRect = lightSlotEl.getBoundingClientRect();
+  const heavyVRect = heavyVSlot.getBoundingClientRect();
+  const heavyJRect = heavyJSlot.getBoundingClientRect();
+  const centerPanelRect = centerPanel.getBoundingClientRect();
+  const antigenRect = antigenSlotEl.getBoundingClientRect();
+  
+  // 绘制轻链恒定区矩形框
+  const lightBox = document.createElement('div');
+  lightBox.className = 'light-constant-box';
+  lightBox.style.width = `${lightRect.width}px`;
+  lightBox.style.height = `${lightRect.height}px`;
+  lightBox.style.left = `${lightRect.left - centerPanelRect.left}px`;
+  lightBox.style.top = `${lightRect.top - centerPanelRect.top}px`;
+  centerPanel.appendChild(lightBox);
+  
+  // 绘制重链恒定区垂直线
+  const heavyLine = document.createElement('div');
+  heavyLine.className = 'heavy-constant-line';
+  heavyLine.style.width = '2px';
+  heavyLine.style.height = `${heavyJRect.bottom - heavyVRect.top}px`;
+  heavyLine.style.left = `${heavyVRect.right - centerPanelRect.left + 5}px`;
+  heavyLine.style.top = `${heavyVRect.top - centerPanelRect.top}px`;
+  centerPanel.appendChild(heavyLine);
+  
+  // 绘制抗原螺杆
+  if (antigenSlotEl.querySelector('img')) {
+    const screw = document.createElement('div');
+    screw.className = 'antigen-screw';
+    screw.style.width = '4px';
+    screw.style.height = '60px';
+    screw.style.left = `${antigenRect.left - centerPanelRect.left + antigenRect.width/2 - 2}px`;
+    screw.style.top = `${antigenRect.bottom - centerPanelRect.top}px`;
+    screw.style.borderRadius = '2px 2px 0 0';
+    centerPanel.appendChild(screw);
+  }
+}
+
+// 选择链
+function pick(img,type){
+  const list=type==='heavy'?heavyList:lightList;
+  [...list.children].forEach(el=>el.classList.remove('selected'));
+  img.classList.add('selected');
+  
+  if(type==='heavy'){
+    heavySel=img.dataset.chainId;
+    const target=document.getElementById(heavySlotsOrder[heavyFillIndex]);
+    heavyFillIndex=(heavyFillIndex+1)%heavySlotsOrder.length;
+    render(target,img);
+  }else{
+    lightSel=img.dataset.chainId;
+    render(lightSlot,img);
+  }
+  
+  resultDisp.textContent='Awaiting assembly…';
+  drawConstantRegion();
+}
+
+// 渲染到槽位
+function render(slot,imgEl){
+  slot.innerHTML='';
+  const clone=imgEl.cloneNode();
+  clone.className='';
+  clone.style.border='none';
+  
+  if(slot.id.startsWith('slot-heavy')){
+    clone.style.transform='rotate(-90deg)';
+  }
+  
+  slot.appendChild(clone);
+  drawConstantRegion();
+}
+
+// 绑定事件
+heavyList.addEventListener('click',e=>{if(e.target.classList.contains('chain-img'))pick(e.target,'heavy');});
+lightList.addEventListener('click',e=>{if(e.target.classList.contains('chain-img'))pick(e.target,'light');});
+
+// 检查匹配
+function isMatch(){
+  if(!(heavySel&&lightSel))return false;
+  
+  // 简化匹配逻辑：H和L编号相同且等于抗原编号
+  const h=heavySel.slice(1);
+  const l=lightSel.slice(1);
+  const agNum=currentAg.replace('Ag', '');
+  
+  return h===l && h===agNum;
+}  
+
+// 闪光效果
+function flash(el){
+  const f=document.createElement('div');
+  f.className='flash-effect';
+  el.appendChild(f);
+  setTimeout(()=>f.remove(),800);
+}  
+
+// 检查绑定按钮
+document.getElementById('check-btn').addEventListener('click',()=>{
+  if(!heavySel||!lightSel){
+    resultDisp.textContent='❌ Select both chains.';
+    return;
+  }
+  
+  if(isMatch()){
+    resultDisp.textContent='✅ Perfect Fit!';
+    [heavySlot,lightSlot,document.getElementById('antigen-slot')].forEach(flash);
+  }else{
+    resultDisp.textContent='✘ No Binding. Try another combo.';
+  }
+});
+
+// 重置按钮
+document.getElementById('reset-btn').addEventListener('click',()=>{
+  heavySel=lightSel=null;
+  heavyFillIndex=0;
+  
+  document.querySelectorAll('.chain-img').forEach(i=>i.classList.remove('selected'));
+  
+  // 清空所有槽位
+  document.getElementById('slot-heavy-v').innerHTML = 'V';
+  document.getElementById('slot-heavy-d').innerHTML = 'D';
+  document.getElementById('slot-heavy-j').innerHTML = 'J';
+  lightSlot.innerHTML = 'Light';
+  
+  resultDisp.textContent='Awaiting assembly...';
+  drawConstantRegion();
+});
+
+// 保存按钮
+document.getElementById('save-btn').addEventListener('click',()=>alert('Antibody saved successfully!'));
+
+// 下一个抗原
+document.getElementById('next-antigen-btn').addEventListener('click',()=>{
+  // 随机选择一个抗原（1-10）
+  const newAgNum = Math.floor(Math.random() * 10) + 1;
+  currentAg = `Ag${newAgNum}`;
+  
+  // 更新抗原显示
+  const antigenSlot = document.getElementById('antigen-slot');
+  antigenSlot.innerHTML = currentAg;
+  
+  // 添加抗原图形（使用重链或轻链图形）
+  const chainType = Math.random() > 0.5 ? 'heavy' : 'light';
+  const chainNum = Math.floor(Math.random() * 10) + 1;
+  const chainPrefix = chainType === 'heavy' ? 'H' : 'L';
+  
+  const antigenImg = document.createElement('img');
+  antigenImg.src = `css/${chainType}_${chainPrefix}${chainNum}.svg`;
+  antigenImg.style.transform = 'scaleX(-1) rotate(30deg)';
+  antigenSlot.appendChild(antigenImg);
+  
+  resultDisp.textContent='Awaiting assembly…';
+  drawConstantRegion();
+});
+
+// 初始化抗原
+document.getElementById('antigen-slot').innerHTML = `
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="30" r="20" fill="#ff6b6b" />
+    <rect x="45" y="30" width="10" height="40" fill="#ff9e7d" />
+  </svg>
+  <div style="position:absolute; bottom:10px;">${currentAg}</div>
+`;
+
+// 初始绘制恒定区
+window.addEventListener('load', drawConstantRegion);
+window.addEventListener('resize', drawConstantRegion);
+</script>
+</body>
+</html>
