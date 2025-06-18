@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Antibody Composer – v21 (sym-done)</title>
+  <style>
+    html,body{margin:0;height:100%;display:flex;justify-content:center;align-items:center;background:#f4fbff;}
+    svg{background:#fff;border:1px solid #b0d8f1;}
+  </style>
+</head>
+<body>
+
+<svg id="canvas" width="700" height="700" viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">
+  <!-- ======== 片段定义 ======== -->
+  <defs>
+    <!-- Heavy -->
+    <symbol id="H1" viewBox="0 0 100 100">
+      <polyline points="10,50 50,10 90,50" stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="H2" viewBox="0 0 100 100">
+      <path d="M10 50 Q50 10 90 50" stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <!-- Light (独立资源) -->
+    <symbol id="L1" viewBox="0 0 100 100">
+      <path d="M10 50 Q50 10 90 50" stroke="#0079c9" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </symbol>
+  </defs>
+
+  <!-- ======== 重链骨架 ======== -->
+  <g id="heavyLeft">
+    <polyline points="170,330 170,220 110,110 95,118 150,220" fill="none" stroke="#0093ff" stroke-width="4" stroke-linecap="square"/>
+    <path id="axisHeavyLeft" d="M170 330 L170 220 L110 110 L95 118 L150 220" fill="none" stroke="none"/>
+  </g>
+  <g id="heavyRight" transform="translate(360 0) scale(-1 1)">
+    <use href="#heavyLeft"/>
+  </g>
+
+  <!-- ======== 轻链骨架 ======== -->
+  <g id="lightLeft">
+    <polyline points="125.35,211.49 79.17,126.83 63.75,135.21 110,220" fill="none" stroke="#0093ff" stroke-width="4" stroke-linecap="square"/>
+    <path id="axisLightLeft" d="M125.35 211.49 L79.17 126.83 L63.75 135.21 L110 220" fill="none" stroke="none"/>
+  </g>
+  <g id="lightRight" transform="translate(360 0) scale(-1 1)">
+    <polyline points="125.35,211.49 79.17,126.83 63.75,135.21 110,220" fill="none" stroke="#0093ff" stroke-width="4" stroke-linecap="square"/>
+    <path id="axisLightRight" d="M125.35 211.49 L79.17 126.83 L63.75 135.21 L110 220" fill="none" stroke="none"/>
+  </g>
+</svg>
+
+<script>
+/* =============================================================
+ * 调试参数集中定义，修改这里即可同步应用
+ * ===========================================================*/
+const HEAVY = {
+  SCALE:    0.12,
+  GAP:      35,
+  SHIFT_X: -5,
+  SHIFT_Y: -28
+};
+
+const LIGHT = {
+  CHAIN_SHIFT_X: 30,  // ↔ 整条轻链 (向外为正)
+  CHAIN_SHIFT_Y: 20,  // ↕ 整条轻链 (向下为正)
+  L1: {
+    SCALE:      0.28,
+    GAP:        0,
+    SHIFT_X:    30,
+    SHIFT_Y:    30,
+    ROT_OFFSET: 270   // 左侧弧顶朝向重链
+  }
+};
+/* ===========================================================*/
+
+// ---------- 通用：沿路径排片段 ----------
+function placePieces({path, group, ids, gap, scale, shiftX=0, shiftY=0, rotOffset=0}) {
+  const el = typeof path === 'string' ? document.getElementById(path) : path;
+  if (!el || typeof el.getTotalLength !== 'function') return;
+
+  const NS   = 'http://www.w3.org/2000/svg';
+  const len  = el.getTotalLength();
+  const base = (len - gap * (ids.length - 1)) / 2;
+
+  // 清理旧片段
+  group.querySelectorAll('use.piece').forEach(n => n.remove());
+
+  ids.forEach((id, i) => {
+    const d  = base + i * gap;
+    const p1 = el.getPointAtLength(d);
+    const p2 = el.getPointAtLength(Math.min(d + 0.01, len));
+    const ang = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI + rotOffset;
+
+    const u = document.createElementNS(NS, 'use');
+    u.classList.add('piece');
+    u.setAttribute('href', #${id});
+    u.setAttribute('vector-effect', 'non-scaling-stroke');
+    u.setAttribute('transform',
+      translate(${p1.x + shiftX} ${p1.y + shiftY}) rotate(${ang}) translate(-50 -50) scale(${scale}));
+    group.appendChild(u);
+  });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  /* ================= 轻链整体平移 ================= */
+  if (LIGHT.CHAIN_SHIFT_X || LIGHT.CHAIN_SHIFT_Y) {
+    // 左侧（正常坐标系）：向外 = 负 X
+    document.getElementById('lightLeft')
+      .setAttribute('transform', translate(${-LIGHT.CHAIN_SHIFT_X} ${LIGHT.CHAIN_SHIFT_Y}));
+
+    // 右侧（镜像坐标系）：translate(-X) 仍然保持对称
+    document.getElementById('lightRight')
+      .setAttribute('transform', translate(360 0) scale(-1 1) translate(${-LIGHT.CHAIN_SHIFT_X} ${LIGHT.CHAIN_SHIFT_Y}));
+  }
+
+  /* ================= 布置重链片段 ================= */
+  ['Left', 'Right'].forEach(side => placePieces({
+    path:   'axisHeavyLeft',
+    group:  document.getElementById(heavy${side}),
+    ids:    ['H2','H1','H2'],
+    gap:    HEAVY.GAP,
+    scale:  HEAVY.SCALE,
+    shiftX: HEAVY.SHIFT_X,
+    shiftY: HEAVY.SHIFT_Y
+  }));
+
+  /* ================= 轻链左侧 L1 ================= */
+  placePieces({
+    path:   'axisLightLeft',
+    group:  document.getElementById('lightLeft'),
+    ids:    ['L1'],
+    gap:    LIGHT.L1.GAP,
+    scale:  LIGHT.L1.SCALE,
+    shiftX: LIGHT.L1.SHIFT_X,
+    shiftY: LIGHT.L1.SHIFT_Y,
+    rotOffset: LIGHT.L1.ROT_OFFSET
+  });
+
+  /* ================= 轻链右侧 L1 ================= */
+  // 镜像后的正确旋转：θ' = 180 − θ
+  const rotRight = 180 - LIGHT.L1.ROT_OFFSET;
+  placePieces({
+    path:   'axisLightLeft',      // 同一几何
+    group:  document.getElementById('lightRight'),
+    ids:    ['L1'],
+    gap:    LIGHT.L1.GAP,
+    scale:  LIGHT.L1.SCALE,
+    shiftX: LIGHT.L1.SHIFT_X,     // 与左侧一致
+    shiftY: LIGHT.L1.SHIFT_Y,
+    rotOffset: rotRight
+  });
+});
+</script>
+</body>
+</html>
