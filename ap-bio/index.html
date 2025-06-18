@@ -1,96 +1,99 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Antibody Workshop – B‑Cell Edition (v21)</title>
-  <style>
-    /* ==== Reset ==== */
-    *,*:before,*:after{box-sizing:border-box;margin:0;padding:0;}
-    html,body{height:100%;}
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Antibody Workshop – B-Cell Edition (Combined)</title>
+<style>
+  /* ===== Reset ===== */
+  *,*:before,*:after{box-sizing:border-box;margin:0;padding:0;}
+  html, body { height: 100%; }
 
-    /* ==== Background + Typography ==== */
-    body{
-      font-family:Arial,Helvetica,sans-serif;
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
-      background:radial-gradient(circle at center,#e9f5ff 0%,#c9e4f7 45%,#b0d8f1 100%);
-      color:#073b4c;
-    }
+  /* ===== Background & Typography ===== */
+  body{
+    font-family:Arial,Helvetica,sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    background:radial-gradient(circle at center,#e9f5ff 0%,#c9e4f7 45%,#b0d8f1 100%);
+    color:#073b4c;
+  }
 
-    /* ==== Header ==== */
-    header{text-align:center;padding:1rem 2rem;background:#118ab2;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.14);}  
-    header h1{font-size:1.9rem;margin-bottom:.3rem;}
-    header p{font-size:1rem;opacity:.85;}
+  /* ===== Header ===== */
+  header{text-align:center;padding:1rem 2rem;background:#118ab2;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.14);}  
+  header h1{font-size:1.9rem;margin-bottom:.3rem;}
+  header p{font-size:1rem;opacity:.85;}
 
-    /* ==== Grid Layout ==== */
-    .main{flex:1;min-height:0;padding:1rem 2rem;display:grid;gap:1rem;grid-template-columns:150px 150px 1fr 320px;}
-    .panel{background:rgba(255,255,255,.85);border-radius:14px;padding:1rem;display:flex;flex-direction:column;min-height:0;overflow:hidden;backdrop-filter:blur(3px);box-shadow:0 2px 6px rgba(0,0,0,.08);}  
-    .panel h2{font-size:1.1rem;margin-bottom:.6rem;color:#118ab2;}
+  /* ===== Main Grid ===== */
+  .main{flex:1;min-height:0;padding:1rem 2rem;display:grid;gap:1rem;grid-template-columns:150px 150px 1fr 320px;}
+  .panel{background:rgba(255,255,255,.85);border-radius:14px;padding:1rem;display:flex;flex-direction:column;min-height:0;overflow:hidden;backdrop-filter:blur(3px);box-shadow:0 2px 6px rgba(0,0,0,.08);}  
+  .panel h2{font-size:1.1rem;margin-bottom:.6rem;color:#118ab2;}
+  .vlist{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;padding-right:.3rem;scrollbar-width:auto; max-height: 100%;}
+  .vlist::-webkit-scrollbar{width:6px;} .vlist::-webkit-scrollbar-thumb{background:#8ecae6;border-radius:3px;}
 
-    /* ==== Chain list ==== */
-    .vlist{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;padding-right:.3rem;max-height:100%;}
-    .vlist::-webkit-scrollbar{width:6px;} .vlist::-webkit-scrollbar-thumb{background:#8ecae6;border-radius:3px;}
-    .chain-img{position:relative;width:100%;height:100px;border:2px solid transparent;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:border .2s;}
-    .chain-img:hover{border-color:#118ab2;}
-    .chain-img.selected{border-color:#118ab2;background:#e6f4ff;box-shadow:0 0 0 3px rgba(17,138,178,.3);}  
-    .chain-name{position:absolute;bottom:4px;left:0;right:0;font-size:.8rem;font-weight:bold;text-align:center;pointer-events:none;}
+  /* ===== Chain Thumbnails ===== */
+  .chain-img{
+    position:relative;width:100%;height:100px;min-height:100px;max-height:100px;border:2px solid transparent;border-radius:8px;background:#fff;cursor:pointer;transition:border .2s;display:flex;align-items:center;justify-content:center;padding:6px;overflow:hidden;
+  }
+  .chain-img:hover{border-color:#118ab2;}  
+  .chain-img.selected{border-color:#118ab2;background:#e6f4ff;box-shadow:0 0 0 3px rgba(17,138,178,.3);}  
+  .chain-name{position:absolute;bottom:4px;left:0;right:0;font-size:.8rem;font-weight:bold;text-align:center;pointer-events:none;}
 
-    /* ==== Center panel ==== */
-    #center-panel{position:relative;align-items:center;justify-content:center;gap:1rem;}
-    #floating-area{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1;}
-    .slot{width:200px;height:200px;border:2px dashed #bfd7ea;border-radius:12px;background:rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;position:relative;z-index:2;}
-    .chain-slot-container{display:flex;gap:1.5rem;}
-    .chain-slot-container .slot{width:160px;height:160px;}
-    #release-btn{margin-top:1rem;align-self:center;padding:.6rem 1.6rem;border:none;border-radius:6px;font-size:.9rem;font-weight:600;cursor:pointer;background:#ffb703;color:#7a5200;transition:background .2s;z-index:2;}
-    #release-btn:hover:not(:disabled){background:#fca311;}
-    #release-btn:disabled{background:#ccc;color:#666;cursor:not-allowed;}
+  /* ===== Center Panel ===== */
+  #center-panel{position:relative;align-items:center;justify-content:center;gap:1rem;}
+  #floating-area{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1;}
+  .slot{width:200px;height:200px;border:2px dashed #bfd7ea;border-radius:12px;background:rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;z-index:2;}
+  .slot img{position:absolute;width:90%;height:auto;object-fit:contain;}
+  .chain-slot-container{display:flex;gap:1.5rem;}
+  .chain-slot-container .slot{width:160px;height:160px;}
+  #release-btn{margin-top:1rem;align-self:center;padding:.6rem 1.6rem;border:none;border-radius:6px;font-size:.9rem;font-weight:600;cursor:pointer;background:#ffb703;color:#7a5200;transition:background .2s;z-index:2;}
+  #release-btn:hover:not(:disabled){background:#fca311;}
+  #release-btn:disabled{background:#ccc;color:#666;cursor:not-allowed;}
 
-    /* ==== Binding result & footer ==== */
-    #result-display{flex:1;display:flex;align-items:center;justify-content:center;font-size:.9rem;text-align:center;border:2px dashed #8ecae6;border-radius:10px;background:rgba(255,255,255,.45);padding:.5rem;}
-    .bottom-bar{padding:.8rem 2rem;background:#d3eafd;display:flex;justify-content:space-between;align-items:center;box-shadow:0 -2px 6px rgba(0,0,0,.05);}  
-    .bottom-bar button{padding:.5rem 1.3rem;border:none;border-radius:6px;font-size:.9rem;font-weight:600;cursor:pointer;background:#118ab2;color:#fff;transition:background .2s;}
-    .bottom-bar button:hover{background:#0e799c;}
+  /* ===== Result Panel / Bottom Bar ===== */
+  #result-display{flex:1;display:flex;align-items:center;justify-content:center;font-size:.9rem;text-align:center;border:2px dashed #8ecae6;border-radius:10px;background:rgba(255,255,255,.45);padding:.5rem;}
+  .bottom-bar{padding:.8rem 2rem;background:#d3eafd;display:flex;justify-content:space-between;align-items:center;box-shadow:0 -2px 6px rgba(0,0,0,.05);}  
+  .bottom-bar button{padding:.5rem 1.3rem;border:none;border-radius:6px;font-size:.9rem;font-weight:600;cursor:pointer;background:#118ab2;color:#fff;transition:background .2s;}  
+  .bottom-bar button:hover{background:#0e799c;}
 
-    /* ==== Floating antibodies ==== */
-    .floating-antibody{position:absolute;width:120px;height:120px;pointer-events:none;}
+  /* ===== Floating Antibodies ===== */
+  .floating-antibody{position:absolute;width:120px;height:120px;pointer-events:none;transition:transform .5s ease-out;}
 
-    /* ==== Flash effect ==== */
-    @keyframes flash{0%{opacity:0;}50%{opacity:.9;}100%{opacity:0;}}
-    .flash-effect{position:absolute;inset:0;background:rgba(255,215,0,.45);pointer-events:none;border-radius:inherit;animation:flash .8s ease-out forwards;}
-  </style>
+  /* ===== Flash Effect ===== */
+  @keyframes flash{0%{opacity:0;}50%{opacity:.9;}100%{opacity:0;}}
+  .flash-effect{position:absolute;inset:0;background:rgba(255,215,0,.45);pointer-events:none;border-radius:inherit;animation:flash .8s ease-out forwards;}
+</style>
 </head>
 <body>
-
 <header>
-  <h1>Antibody Workshop – B‑Cell Mode</h1>
-  <p>Select heavy & light chains, test binding, then release antibodies into the bloodstream.</p>
+  <h1>Antibody Workshop – B-Cell Mode</h1>
+  <p>Select heavy & light chains, assemble antibodies, test binding, then release.</p>
 </header>
-
 <section class="main">
   <!-- === Heavy list === -->
-  <aside class="panel"><h2>Heavy</h2><div id="heavy-list" class="vlist"></div></aside>
+  <aside class="panel">
+    <h2>Heavy</h2>
+    <div id="heavy-list" class="vlist"></div>
+  </aside>
 
   <!-- === Light list === -->
-  <aside class="panel"><h2>Light</h2><div id="light-list" class="vlist"></div></aside>
+  <aside class="panel">
+    <h2>Light</h2>
+    <div id="light-list" class="vlist"></div>
+  </aside>
 
   <!-- === Center panel === -->
   <section class="panel" id="center-panel">
     <div id="floating-area"></div>
-
-    <div id="assembly-wrapper">  <!-- 将在 release 后隐藏，在 next‑antigen 时恢复 -->
-      <div id="antigen-slot" class="slot">Ag1</div>
-      <div class="chain-slot-container" style="margin-top:1rem">
-        <div id="light-slot" class="slot">Light</div>
-        <div style="display:flex;flex-direction:column;gap:20px;">
-          <div id="slot-heavy-v" class="slot" style="width:160px;height:160px;">V</div>
-          <div id="slot-heavy-d" class="slot" style="width:160px;height:160px;">D</div>
-          <div id="slot-heavy-j" class="slot" style="width:160px;height:160px;">J</div>
-        </div>
+    <div id="antigen-slot" class="slot">Ag1</div>
+    <div class="chain-slot-container" style="margin-top:1rem;position:relative;">
+      <div id="light-slot" class="slot">Light</div>
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <div id="slot-heavy-v" class="slot" style="width:160px;height:160px;">V</div>
+        <div id="slot-heavy-d" class="slot" style="width:160px;height:160px;">D</div>
+        <div id="slot-heavy-j" class="slot" style="width:160px;height:160px;">J</div>
       </div>
     </div>
-
     <button id="release-btn" disabled>Release Antibody</button>
   </section>
 
@@ -112,220 +115,277 @@
 
 <script>
 /*************************************************
- * Chain SVG data (inline)                       *
+ *  Chain definitions (inline SVG strings)       *
  *************************************************/
 const chains = {
-  heavy:[
-    {id:"H1", svg:'<polyline points="10,50 50,10 90,50" stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>'},
-    {id:"H2", svg:'<path d="M10 50 Q50 10 90 50" stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>'},
-    {id:"H3", svg:'<path d="M10 10 C30 80, 70 80, 90 10" stroke="#0079c9" stroke-width="3" fill="none"/>'},
-    {id:"H4", svg:'<path d="M10 50 Q50 90 90 50" stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>'},
-    {id:"H5", svg:'<path d="M10 30 C40 10, 60 10, 90 30" stroke="#0079c9" stroke-width="3" fill="none"/>'}
+  heavy: [
+    { id:"H1", name:"Heavy Alpha", svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polyline points="10,50 50,10 90,50" stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/></svg>'},
+    { id:"H2", name:"Heavy Beta",  svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 Q50 10 90 50" stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/></svg>'},
+    { id:"H3", name:"Heavy Gamma", svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 10 C30 80, 70 80, 90 10" stroke="#0079c9" stroke-width="3" fill="none"/></svg>'},
+    { id:"H4", name:"Heavy Delta", svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 Q50 90 90 50" stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/></svg>'},
+    { id:"H5", name:"Heavy Epsilon",svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 30 C40 10, 60 10, 90 30" stroke="#0079c9" stroke-width="3" fill="none"/></svg>'}
   ],
-  light:[
-    {id:"L1", svg:'<line x1="10" y1="10" x2="90" y2="90" stroke="#ef476f" stroke-width="3" stroke-linecap="round"/>'},
-    {id:"L2", svg:'<line x1="10" y1="90" x2="90" y2="10" stroke="#ef476f" stroke-width="3" stroke-linecap="round"/>'},
-    {id:"L3", svg:'<path d="M10 50 Q50 90 90 50" stroke="#ef476f" stroke-width="3" stroke-linecap="round" fill="none"/>'},
-    {id:"L4", svg:'<path d="M10 10 C30 50, 70 50, 90 10" stroke="#ef476f" stroke-width="3" fill="none"/>'},
-    {id:"L5", svg:'<path d="M10 90 C30 50, 70 50, 90 90" stroke="#ef476f" stroke-width="3" fill="none"/>'}
+  light: [
+    { id:"L1", name:"Light Alpha", svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="10" y1="10" x2="90" y2="90" stroke="#ef476f" stroke-width="3" stroke-linecap="round"/></svg>'},
+    { id:"L2", name:"Light Beta",  svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="10" y1="90" x2="90" y2="10" stroke="#ef476f" stroke-width="3" stroke-linecap="round"/></svg>'},
+    { id:"L3", name:"Light Gamma", svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 Q50 90 90 50" stroke="#ef476f" stroke-width="3" stroke-linecap="round" fill="none"/></svg>'},
+    { id:"L4", name:"Light Delta", svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 10 C30 50, 70 50, 90 10" stroke="#ef476f" stroke-width="3" fill="none"/></svg>'},
+    { id:"L5", name:"Light Epsilon",svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 90 C30 50, 70 50, 90 90" stroke="#ef476f" stroke-width="3" fill="none"/></svg>'}
   ]
 };
 
 /*************************************************
- * State                                         *
+ *  State                                        *
  *************************************************/
-let selectedHeavy={V:null,D:null,J:null};
-let selectedLight=null;
-let heavyIndex=0; // 0→V 1→D 2→J
-let currentAg='1';
-let floatingAntibodies=[];
-let animating=false;
+let selectedHeavy = { V:null, D:null, J:null };
+let selectedLight = null;
+let heavyIndex = 0;               // 0→V, 1→D, 2→J
+let currentAg = '1';
+let floatingAntibodies = [];
+let animationStarted = false;
 
 /*************************************************
- * DOM refs                                       *
+ *  DOM convenience                              *
  *************************************************/
-const heavyList=document.getElementById('heavy-list');
-const lightList=document.getElementById('light-list');
-const resultDisp=document.getElementById('result-display');
-const heavySlotEls={V:document.getElementById('slot-heavy-v'),D:document.getElementById('slot-heavy-d'),J:document.getElementById('slot-heavy-j')};
-const lightSlotEl=document.getElementById('light-slot');
-const antigenSlot=document.getElementById('antigen-slot');
-const releaseBtn=document.getElementById('release-btn');
-const floatingArea=document.getElementById('floating-area');
-const assemblyWrapper=document.getElementById('assembly-wrapper');
+const heavyList        = document.getElementById('heavy-list');
+const lightList        = document.getElementById('light-list');
+const resultDisp       = document.getElementById('result-display');
+const heavySlotsEls    = { V:document.getElementById('slot-heavy-v'), D:document.getElementById('slot-heavy-d'), J:document.getElementById('slot-heavy-j') };
+const lightSlotEl      = document.getElementById('light-slot');
+const antigenSlot      = document.getElementById('antigen-slot');
+const releaseBtn       = document.getElementById('release-btn');
+const floatingArea     = document.getElementById('floating-area');
 
 /*************************************************
- * Build chain thumbnails                         *
+ *  Build chain lists                            *
  *************************************************/
-function buildThumb(chain,type){
-  const d=document.createElement('div');
-  d.className='chain-img';
-  d.dataset.chainId=chain.id;
-  d.dataset.type=type;
-  const holder=document.createElement('div');
-  holder.innerHTML=<svg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'>${chain.svg}</svg>;
-  holder.style.width='100%';holder.style.height='100%';
-  d.appendChild(holder);
-  const label=document.createElement('div');label.className='chain-name';label.textContent=chain.id;
-  label.style.color=type==='heavy'?'#0079c9':'#ef476f';
-  d.appendChild(label);
-  return d;
+function buildChainLists(){
+  function makeThumb(chain, color){
+    const div=document.createElement('div');
+    div.className='chain-img';
+    div.dataset.chainId=chain.id;
+    div.dataset.type=color;
+
+    // chain.svg is raw string; wrap in container so we can style
+    const holder=document.createElement('div');
+    holder.innerHTML=chain.svg;
+    holder.style.width='100%';
+    holder.style.height='100%';
+    holder.style.objectFit='contain';
+    div.appendChild(holder);
+
+    const label=document.createElement('div');
+    label.className='chain-name';
+    label.textContent=chain.id;
+    label.style.color=color==='heavy'? '#0079c9':'#ef476f';
+    div.appendChild(label);
+
+    return div;
+  }
+
+  chains.heavy.forEach(ch=>heavyList.appendChild(makeThumb(ch,'heavy')));
+  chains.light.forEach(ch=>lightList.appendChild(makeThumb(ch,'light')));
 }
-chains.heavy.forEach(c=>heavyList.appendChild(buildThumb(c,'heavy')));
-chains.light.forEach(c=>lightList.appendChild(buildThumb(c,'light')));
 
 /*************************************************
- * Selection logic                                *
+ *  Selection logic                              *
  *************************************************/
-function renderIntoSlot(slot,chainSvg){
-  slot.innerHTML=<div style='width:90%;height:auto;transform:rotate(-90deg);'>\n  <svg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'>${chainSvg}</svg></div>;
-}
-
 function selectChain(el){
-  const type=el.dataset.type;
-  const chainId=el.dataset.chainId;
+  const type = el.dataset.type;
+  const chainId = el.dataset.chainId;
 
-  document.querySelectorAll('.chain-img').forEach(t=>t.classList.remove('selected'));
+  document.querySelectorAll('.chain-img').forEach(c=>c.classList.remove('selected'));
   el.classList.add('selected');
 
   if(type==='heavy'){
     const parts=['V','D','J'];
     const part=parts[heavyIndex];
-    const chain=chains.heavy.find(c=>c.id===chainId);
-    selectedHeavy[part]=chain;
-    renderIntoSlot(heavySlotEls[part],chain.svg);
+    const chainObj = chains.heavy.find(c=>c.id===chainId);
+    selectedHeavy[part]={...chainObj};
+
+    // render into slot rotated -90deg
+    renderIntoSlot(heavySlotsEls[part], chainObj.svg, -90);
+
     heavyIndex=(heavyIndex+1)%3;
   } else {
-    const chain=chains.light.find(c=>c.id===chainId);
-    selectedLight=chain;
-    renderIntoSlot(lightSlotEl,chain.svg);
+    const chainObj = chains.light.find(c=>c.id===chainId);
+    selectedLight={...chainObj};
+    renderIntoSlot(lightSlotEl, chainObj.svg, -90);
   }
 
+  // reset binding message and enable release if complete
   resultDisp.textContent='Awaiting assembly…';
-  releaseBtn.disabled=!isComplete();
+  releaseBtn.disabled=!isAntibodyComplete();
 }
 
-function isComplete(){return selectedHeavy.V&&selectedHeavy.D&&selectedHeavy.J&&selectedLight;}
+function renderIntoSlot(slot, svgString, rotationDeg){
+  slot.innerHTML='';
+  const wrapper=document.createElement('div');
+  wrapper.innerHTML=svgString;
+  wrapper.style.transform=`rotate(${rotationDeg}deg)`;
+  wrapper.style.width='90%';
+  wrapper.style.height='auto';
+  wrapper.style.objectFit='contain';
+  slot.appendChild(wrapper);
+}
 
-heavyList.addEventListener('click',e=>{const img=e.target.closest('.chain-img');if(img)selectChain(img);});
-lightList.addEventListener('click',e=>{const img=e.target.closest('.chain-img');if(img)selectChain(img);});
+function isAntibodyComplete(){
+  return selectedHeavy.V && selectedHeavy.D && selectedHeavy.J && selectedLight;
+}
 
 /*************************************************
- * Binding logic                                  *
+ *  Binding check logic (same as first version)  *
  *************************************************/
 function isMatch(){
-  if(!isComplete()) return false;
-  const h=selectedHeavy.V.id.slice(1);
-  const l=selectedLight.id.slice(1);
+  if(!(selectedHeavy.V&&selectedLight)) return false;
+  const h = selectedHeavy.V.id.slice(1); // using V segment id suffices for demo
+  const l = selectedLight.id.slice(1);
   return h===l && h===currentAg;
 }
-function flash(el){const f=document.createElement('div');f.className='flash-effect';el.appendChild(f);setTimeout(()=>f.remove(),800);}
 
-document.getElementById('check-btn').addEventListener('click',()=>{
-  if(!isComplete()){resultDisp.textContent='❌ Select all chains first.';return;}
-  if(isMatch()){resultDisp.textContent='✅ Perfect Fit!';[lightSlotEl,...Object.values(heavySlotEls),antigenSlot].forEach(flash);} else {
-    resultDisp.textContent='✘ No Binding. Try another combo.';
-  }
-});
-
-/*************************************************
- * SVG builder (采用 v21 逻辑)                    *
- *************************************************/
-const HEAVY_CFG={SCALE:0.12,GAP:35,SHIFT_X:-5,SHIFT_Y:-28};
-const LIGHT_CFG={SHIFT_X:30,SHIFT_Y:20,L1:{SCALE:0.28,GAP:0,SHIFT_X:30,SHIFT_Y:30,ROT_OFFSET:270}};
-
-function makeSymbol(id,svgContent){return <symbol id='${id}' viewBox='0 0 100 100'>${svgContent}</symbol>;}
-
-function createAntibodySvg(h,l){
-  // h: {V,D,J}, l:{id,svg}
-  const defs=[makeSymbol(h.V.id,h.V.svg),makeSymbol(h.D.id,h.D.svg),makeSymbol(h.J.id,h.J.svg),makeSymbol(l.id,l.svg)].join('');
-  // helper to make placePieces-compatible <script> (executed once inside outer document)
-  const skeleton=<g id='heavyLeft'><polyline points='170,330 170,220 110,110 95,118 150,220' fill='none' stroke='#0093ff' stroke-width='4' stroke-linecap='square'/><path id='axisHeavyLeft' d='M170 330 L170 220 L110 110 L95 118 L150 220' fill='none' stroke='none'/></g><g id='heavyRight' transform='translate(360 0) scale(-1 1)'><use href='#heavyLeft'/></g><g id='lightLeft'><polyline points='125.35,211.49 79.17,126.83 63.75,135.21 110,220' fill='none' stroke='#0093ff' stroke-width='4' stroke-linecap='square'/><path id='axisLightLeft' d='M125.35 211.49 L79.17 126.83 L63.75 135.21 L110 220' fill='none' stroke='none'/></g><g id='lightRight' transform='translate(360 0) scale(-1 1)'><polyline points='125.35,211.49 79.17,126.83 63.75,135.21 110,220' fill='none' stroke='#0093ff' stroke-width='4' stroke-linecap='square'/><path id='axisLightRight' d='M125.35 211.49 L79.17 126.83 L63.75 135.21 L110 220' fill='none' stroke='none'/></g>;
-  const script=<script><![CDATA[
-  const NS='http://www.w3.org/2000/svg';
-  function place(gId,axisId,ids,gap,scale,shiftX,shiftY,rotOff){
-    const g=document.getElementById(gId);const axis=document.getElementById(axisId);
-    const len=axis.getTotalLength();const base=(len-gap*(ids.length-1))/2;
-    ids.forEach((id,i)=>{const d=base+i*gap;const p=axis.getPointAtLength(d);const p2=axis.getPointAtLength(Math.min(d+0.01,len));const ang=Math.atan2(p2.y-p.y,p2.x-p.x)*180/Math.PI+rotOff;
-      const use=document.createElementNS(NS,'use');use.setAttribute('href','#'+id);use.setAttribute('transform',translate(${p.x+shiftX} ${p.y+shiftY}) rotate(${ang}) translate(-50 -50) scale(${scale}));use.setAttribute('vector-effect','non-scaling-stroke');g.appendChild(use);});}
-  place('heavyLeft','axisHeavyLeft',['${h.V.id}','${h.D.id}','${h.J.id}'],${HEAVY_CFG.GAP},${HEAVY_CFG.SCALE},${HEAVY_CFG.SHIFT_X},${HEAVY_CFG.SHIFT_Y},0);
-  place('heavyRight','axisHeavyLeft',['${h.V.id}','${h.D.id}','${h.J.id}'],${HEAVY_CFG.GAP},${HEAVY_CFG.SCALE},${HEAVY_CFG.SHIFT_X},${HEAVY_CFG.SHIFT_Y},0);
-  place('lightLeft','axisLightLeft',['${l.id}'],${LIGHT_CFG.L1.GAP},${LIGHT_CFG.L1.SCALE},${LIGHT_CFG.L1.SHIFT_X},${LIGHT_CFG.L1.SHIFT_Y},${LIGHT_CFG.L1.ROT_OFFSET});
-  place('lightRight','axisLightLeft',['${l.id}'],${LIGHT_CFG.L1.GAP},${LIGHT_CFG.L1.SCALE},${LIGHT_CFG.L1.SHIFT_X},${LIGHT_CFG.L1.SHIFT_Y},180-${LIGHT_CFG.L1.ROT_OFFSET});
-  ]]></script>;
-  return <svg viewBox='0 0 360 360' width='120' height='120' xmlns='http://www.w3.org/2000/svg' style='transform:rotate(26deg);'>${defs}${skeleton}${script}</svg>;
+function flash(el){
+  const f=document.createElement('div');
+  f.className='flash-effect';
+  el.appendChild(f);
+  setTimeout(()=>f.remove(),800);
 }
 
 /*************************************************
- * Floating antibodies + animation               *
+ *  Antibody SVG builder (from last snippet)     *
  *************************************************/
-function generateFloating(){
-  const ab=createAntibodySvg(selectedHeavy,selectedLight);
-  const div=document.createElement('div');div.className='floating-antibody';div.innerHTML=ab;
-  const rect=floatingArea.getBoundingClientRect();
-  const x=10+Math.random()*(rect.width-140);const y=10+Math.random()*(rect.height-140);
-  div.style.left=${x}px;div.style.top=${y}px;
-  floatingArea.appendChild(div);
-  floatingAntibodies.push({el:div,x,y,dx:(Math.random()-0.5)*0.4,dy:(Math.random()-0.5)*0.4});
+const ANTIBODY_CONFIG = {
+  baseSize: 360,
+  chainPositions: {
+    light  : { x:110,y:110,scale:0.3,rotation:118 },
+    heavyV : { x:250,y:110,scale:0.3,rotation:118 },
+    heavyD : { x:210,y:220,scale:0.3,rotation:118 },
+    heavyJ : { x:250,y:220,scale:0.3,rotation:118 }
+  },
+  floatingSpeed : 0.4,
+  rotationSpeed : 0.1
+};
+
+function createAntibodySvg(heavyChain, lightChain, scale=1){
+  const {chainPositions} = ANTIBODY_CONFIG;
+  const scaledSize = ANTIBODY_CONFIG.baseSize*scale;
+  return `\n    <svg viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg" width="${scaledSize}" height="${scaledSize}" style="transform:rotate(26deg);">\n      <polyline points="170,330 170,220 110,110 94.59,118.41 150,220 150,330 170,330" fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/>\n      <polyline points="125.35,211.49 79.17,126.83 63.75,135.21 110,220 125.35,211.49" fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/>\n      <polyline points="190,330 190,220 250,110 265.41,118.41 210,220 210,330 190,330" fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/>\n      <polyline points="234.65,211.49 280.83,126.83 296.25,135.21 250,220 234.65,211.49" fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/>\n      <g transform="translate(${chainPositions.light.x},${chainPositions.light.y}) scale(${chainPositions.light.scale}) rotate(${chainPositions.light.rotation})">${lightChain.svg}</g>\n      <g transform="translate(${chainPositions.heavyV.x},${chainPositions.heavyV.y}) scale(${chainPositions.heavyV.scale}) rotate(${chainPositions.heavyV.rotation})">${heavyChain.V.svg}</g>\n      <g transform="translate(${chainPositions.heavyD.x},${chainPositions.heavyD.y}) scale(${chainPositions.heavyD.scale}) rotate(${chainPositions.heavyD.rotation})">${heavyChain.D.svg}</g>\n      <g transform="translate(${chainPositions.heavyJ.x},${chainPositions.heavyJ.y}) scale(${chainPositions.heavyJ.scale}) rotate(${chainPositions.heavyJ.rotation})">${heavyChain.J.svg}</g>\n    </svg>`;
+}
+
+/*************************************************
+ *  Floating antibody helpers (from middle)      *
+ *************************************************/
+function generateFloatingAntibodies(heavyChain, lightChain, count, container){
+  const arr=[];
+  const rect=container.getBoundingClientRect();
+  for(let i=0;i<count;i++){
+    const div=document.createElement('div');
+    div.className='floating-antibody';
+    div.innerHTML=createAntibodySvg(heavyChain,lightChain);
+
+    // random initial pos (10px margin)
+    const x = 10 + Math.random()*(rect.width-140);
+    const y = 10 + Math.random()*(rect.height-140);
+    div.style.left=`${x}px`;
+    div.style.top =`${y}px`;
+
+    container.appendChild(div);
+    arr.push({element:div,x,y,dx:(Math.random()-0.5)*ANTIBODY_CONFIG.floatingSpeed,dy:(Math.random()-0.5)*ANTIBODY_CONFIG.floatingSpeed,rotation:Math.random()*360,rotationSpeed:(Math.random()-0.5)*ANTIBODY_CONFIG.rotationSpeed});
+  }
+  return arr;
 }
 
 function animate(){
   const rect=floatingArea.getBoundingClientRect();
-  floatingAntibodies.forEach(a=>{
-    a.x+=a.dx;a.y+=a.dy;
-    if(a.x<10||a.x>rect.width-130) a.dx*=-1;
-    if(a.y<10||a.y>rect.height-130) a.dy*=-1;
-    a.el.style.left=${a.x}px;
-    a.el.style.top=${a.y}px;
+  floatingAntibodies.forEach(ab=>{
+    ab.x+=ab.dx;
+    ab.y+=ab.dy;
+    ab.rotation+=ab.rotationSpeed;
+
+    if(ab.x<10){ab.x=10;ab.dx=Math.abs(ab.dx);} 
+    if(ab.y<10){ab.y=10;ab.dy=Math.abs(ab.dy);} 
+    if(ab.x>rect.width-130){ab.x=rect.width-130;ab.dx=-Math.abs(ab.dx);} 
+    if(ab.y>rect.height-130){ab.y=rect.height-130;ab.dy=-Math.abs(ab.dy);} 
+
+    ab.element.style.left=`${ab.x}px`;
+    ab.element.style.top =`${ab.y}px`;
+    ab.element.style.transform=`rotate(${ab.rotation}deg)`;
   });
-  animating&&requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
 }
 
 /*************************************************
- * Release / Reset / Next‑Antigen                *
+ *  Event handlers                               *
  *************************************************/
+// Build lists on load
+buildChainLists();
+
+// Delegated click for selection
+heavyList.addEventListener('click',e=>{
+  const img=e.target.closest('.chain-img');
+  if(img) selectChain(img);
+});
+lightList.addEventListener('click',e=>{
+  const img=e.target.closest('.chain-img');
+  if(img) selectChain(img);
+});
+
+// Check binding
+document.getElementById('check-btn').addEventListener('click',()=>{
+  if(!isAntibodyComplete()){
+    resultDisp.textContent='❌ Select all chains first.';
+    return;
+  }
+  if(isMatch()){
+    resultDisp.textContent='✅ Perfect Fit!';
+    [lightSlotEl,...Object.values(heavySlotsEls),antigenSlot].forEach(flash);
+  } else {
+    resultDisp.textContent='✘ No Binding. Try another combo.';
+  }
+});
+
+// Release antibody – generates floating copies
 releaseBtn.addEventListener('click',()=>{
-  if(!isComplete())return;
-  // hide assembly slots until next antigen
-  assemblyWrapper.style.display='none';
-  // create 5 copies
-  for(let i=0;i<5;i++) generateFloating();
-  if(!animating){animating=true;requestAnimationFrame(animate);}  
+  if(!isAntibodyComplete()) return;
+  const newOnes = generateFloatingAntibodies(selectedHeavy, selectedLight, 5, floatingArea);
+  floatingAntibodies = floatingAntibodies.concat(newOnes);
+  if(!animationStarted){animationStarted=true;requestAnimationFrame(animate);}  
 });
 
-document.getElementById('reset-btn').addEventListener('click',()=>{
-  resetAll();
-});
-
+// Reset
 function resetAll(){
-  selectedHeavy={V:null,D:null,J:null};selectedLight=null;heavyIndex=0;
+  selectedHeavy={V:null,D:null,J:null};
+  selectedLight=null;
+  heavyIndex=0;
   document.querySelectorAll('.chain-img').forEach(c=>c.classList.remove('selected'));
-  Object.values(heavySlotEls).forEach(s=>{s.innerHTML=s.id.split('-').pop().toUpperCase();});
+  Object.values(heavySlotsEls).forEach(s=>{s.innerHTML=s.id.split('-').pop().toUpperCase();});
   lightSlotEl.innerHTML='Light';
   resultDisp.textContent='Awaiting assembly…';
   releaseBtn.disabled=true;
 }
 
+document.getElementById('reset-btn').addEventListener('click',resetAll);
+
+// Save button (placeholder)
 document.getElementById('save-btn').addEventListener('click',()=>{
-  if(isComplete()) alert(Saved: ${selectedHeavy.V.id}/${selectedHeavy.D.id}/${selectedHeavy.J.id}-${selectedLight.id});
-  else alert('Complete antibody first!');
+  if(isAntibodyComplete()){
+    alert(`Saved antibody: ${selectedHeavy.V.id}/${selectedHeavy.D.id}/${selectedHeavy.J.id}-${selectedLight.id}`);
+  } else {m
+    alert('Complete the antibody first!');
+  }
 });
 
+// Next antigen button (random mirror of heavy/light)
 function nextAntigen(){
-  // clear floating antibodies
-  floatingAntibodies.forEach(a=>a.el.remove());
-  floatingAntibodies=[];animating=false;
-  assemblyWrapper.style.display='block';
-  resetAll();
   const pool=[...chains.heavy,...chains.light];
   const rnd=pool[Math.floor(Math.random()*pool.length)];
   currentAg=rnd.id.slice(1);
-  antigenSlot.innerHTML=<div style='width:90%;height:auto;transform:scaleX(-1);'><svg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'>${rnd.svg}</svg></div>;
+  antigenSlot.innerHTML=`<div style="transform:scaleX(-1);width:90%;height:auto;">${rnd.svg}</div>`;
+  resultDisp.textContent='Awaiting assembly…';
 }
 
 document.getElementById('next-antigen-btn').addEventListener('click',nextAntigen);
 
-// initial antigen
+// Init first antigen
 nextAntigen();
 </script>
 </body>
