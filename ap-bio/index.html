@@ -1,246 +1,332 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Antibody Workshop – Integrated</title>
-<style>
-/* ==== 第 1 版 UI 样式（保持不变） ==== */
-*,*:before,*:after{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;overflow:hidden;}
-body{
-  font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
-  display:flex;flex-direction:column;
-  background:radial-gradient(circle at center,#e1f0fa 0%,#b8dbf2 45%,#9bcef0 100%);
-  color:#0a3d62;
-}
-header{text-align:center;padding:1.2rem 2rem;background:linear-gradient(135deg,#0a6b8a,#118ab2);color:#fff;box-shadow:0 4px 15px rgba(0,0,0,.15);z-index:10;}
-header h1{font-size:2.1rem;margin-bottom:.4rem;font-weight:600;letter-spacing:-.5px;text-shadow:0 2px 4px rgba(0,0,0,.2);}
-header p{font-size:1.05rem;opacity:.92;max-width:620px;margin:0 auto;}
-.main{flex:1;min-height:0;padding:1.5rem 2rem;display:grid;gap:1.5rem;grid-template-columns:170px 170px 1fr 340px;}
-.panel{background:rgba(255,255,255,.92);border-radius:16px;padding:1.4rem;display:flex;flex-direction:column;min-height:0;overflow:hidden;backdrop-filter:blur(4px);box-shadow:0 5px 20px rgba(0,0,0,.1);border:1px solid rgba(255,255,255,.6);transition:transform .3s;}
-.panel:hover{transform:translateY(-3px);}
-.panel h2{font-size:1.25rem;margin-bottom:.8rem;color:#118ab2;padding-bottom:.5rem;border-bottom:2px solid #e1f1f8;position:relative;}
-.panel h2:after{content:'';position:absolute;bottom:-2px;left:0;width:50px;height:2px;background:#ffb703;}
-.vlist{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.7rem;padding-right:.4rem;}
-.vlist::-webkit-scrollbar{width:8px;}
-.vlist::-webkit-scrollbar-thumb{background:#8ecae6;border-radius:4px;}
-.chain-img{position:relative;width:100%;height:100px;border:2px solid transparent;border-radius:10px;background:#fff;cursor:pointer;transition:.3s;box-shadow:0 3px 8px rgba(0,0,0,.08);padding:8px;}
-.chain-img:hover{border-color:#118ab2;transform:translateY(-3px);box-shadow:0 6px 15px rgba(0,0,0,.12);}
-.chain-img.selected{border-color:#118ab2;background:#e6f4ff;box-shadow:0 0 0 3px rgba(17,138,178,.3);}
-#center-panel{position:relative;overflow:hidden;gap:1.5rem;}
-.antibody-container{position:relative;width:100%;height:300px;display:flex;align-items:center;justify-content:center;margin-top:15px;}
-#antibody-svg{width:320px;height:320px;transform:rotate(-28deg);filter:drop-shadow(0 4px 12px rgba(0,0,0,.15));}
-.chain-position{position:absolute;width:80px;height:80px;display:flex;align-items:center;justify-content:center;}
-#light-pos{top:28%;left:30%;}
-#hv-pos{top:28%;right:30%;}
-#hd-pos{top:50%;right:30%;transform:translateY(-50%);}
-#hj-pos{bottom:28%;right:30%;}
-#antigen-mark{position:absolute;top:4%;left:50%;transform:translateX(-50%);width:65px;height:65px;border:2px dashed #ef476f;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:1.3rem;background:rgba(255,255,255,.7);color:#ef476f;}
-#release-btn{padding:.8rem 1.8rem;border:none;border-radius:8px;font-size:1.05rem;font-weight:600;cursor:pointer;background:#ffb703;color:#7a5200;margin-top:1rem;align-self:center;max-width:240px;transition:.3s;box-shadow:0 4px 12px rgba(0,0,0,.15);}
-#release-btn:disabled{background:#ccc;color:#555;cursor:not-allowed;}
-#release-btn:hover:not(:disabled){background:#fca311;transform:translateY(-3px);}
-.bottom-bar{padding:1.1rem 2rem;background:linear-gradient(135deg,#0a6b8a,#118ab2);display:flex;justify-content:space-between;align-items:center;box-shadow:0 -4px 15px rgba(0,0,0,.15);}
-.bottom-bar button{padding:.7rem 1.6rem;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;background:#fff;color:#118ab2;transition:.3s;box-shadow:0 4px 12px rgba(0,0,0,.15);}
-.bottom-bar button:hover{background:#f0f9ff;transform:translateY(-2px);}
-#reset-btn{background:#ffd166;color:#7a5200;}
-#save-btn{background:#06d6a0;color:#015239;margin-left:.8rem;}
-#next-antigen-btn{background:#ef476f;color:#fff;}
-/* ===== 漂浮抗体：仅在释放后创建 ===== */
-.floating-area{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
-.floating-antibody{position:absolute;width:120px;height:120px;pointer-events:none;opacity:.85;transition:transform .4s;}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Antibody Workshop – B‑Cell Edition (v21)</title>
+  <style>
+    /* ==== Reset ==== */
+    *,*:before,*:after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;}
+
+    /* ==== Background + Typography ==== */
+    body{
+      font-family:Arial,Helvetica,sans-serif;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      background:radial-gradient(circle at center,#e9f5ff 0%,#c9e4f7 45%,#b0d8f1 100%);
+      color:#073b4c;
+    }
+
+    /* ==== Header ==== */
+    header{text-align:center;padding:1rem 2rem;background:#118ab2;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.14);}  
+    header h1{font-size:1.9rem;margin-bottom:.3rem;}
+    header p{font-size:1rem;opacity:.85;}
+
+    /* ==== Grid Layout ==== */
+    .main{flex:1;min-height:0;padding:1rem 2rem;display:grid;gap:1rem;grid-template-columns:150px 150px 1fr 320px;}
+    .panel{background:rgba(255,255,255,.85);border-radius:14px;padding:1rem;display:flex;flex-direction:column;min-height:0;overflow:hidden;backdrop-filter:blur(3px);box-shadow:0 2px 6px rgba(0,0,0,.08);}  
+    .panel h2{font-size:1.1rem;margin-bottom:.6rem;color:#118ab2;}
+
+    /* ==== Chain list ==== */
+    .vlist{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;padding-right:.3rem;max-height:100%;}
+    .vlist::-webkit-scrollbar{width:6px;} .vlist::-webkit-scrollbar-thumb{background:#8ecae6;border-radius:3px;}
+    .chain-img{position:relative;width:100%;height:100px;border:2px solid transparent;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:border .2s;}
+    .chain-img:hover{border-color:#118ab2;}
+    .chain-img.selected{border-color:#118ab2;background:#e6f4ff;box-shadow:0 0 0 3px rgba(17,138,178,.3);}  
+    .chain-name{position:absolute;bottom:4px;left:0;right:0;font-size:.8rem;font-weight:bold;text-align:center;pointer-events:none;}
+
+    /* ==== Center panel ==== */
+    #center-panel{position:relative;align-items:center;justify-content:center;gap:1rem;}
+    #floating-area{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1;}
+    .slot{width:200px;height:200px;border:2px dashed #bfd7ea;border-radius:12px;background:rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;position:relative;z-index:2;}
+    .chain-slot-container{display:flex;gap:1.5rem;}
+    .chain-slot-container .slot{width:160px;height:160px;}
+    #release-btn{margin-top:1rem;align-self:center;padding:.6rem 1.6rem;border:none;border-radius:6px;font-size:.9rem;font-weight:600;cursor:pointer;background:#ffb703;color:#7a5200;transition:background .2s;z-index:2;}
+    #release-btn:hover:not(:disabled){background:#fca311;}
+    #release-btn:disabled{background:#ccc;color:#666;cursor:not-allowed;}
+
+    /* ==== Binding result & footer ==== */
+    #result-display{flex:1;display:flex;align-items:center;justify-content:center;font-size:.9rem;text-align:center;border:2px dashed #8ecae6;border-radius:10px;background:rgba(255,255,255,.45);padding:.5rem;}
+    .bottom-bar{padding:.8rem 2rem;background:#d3eafd;display:flex;justify-content:space-between;align-items:center;box-shadow:0 -2px 6px rgba(0,0,0,.05);}  
+    .bottom-bar button{padding:.5rem 1.3rem;border:none;border-radius:6px;font-size:.9rem;font-weight:600;cursor:pointer;background:#118ab2;color:#fff;transition:background .2s;}
+    .bottom-bar button:hover{background:#0e799c;}
+
+    /* ==== Floating antibodies ==== */
+    .floating-antibody{position:absolute;width:120px;height:120px;pointer-events:none;}
+
+    /* ==== Flash effect ==== */
+    @keyframes flash{0%{opacity:0;}50%{opacity:.9;}100%{opacity:0;}}
+    .flash-effect{position:absolute;inset:0;background:rgba(255,215,0,.45);pointer-events:none;border-radius:inherit;animation:flash .8s ease-out forwards;}
+  </style>
 </head>
 <body>
+
 <header>
-  <h1>Antibody Workshop – B-Cell Mode</h1>
-  <p>Select heavy & light chains, bind to an antigen, then release your antibody</p>
+  <h1>Antibody Workshop – B‑Cell Mode</h1>
+  <p>Select heavy & light chains, test binding, then release antibodies into the bloodstream.</p>
 </header>
 
 <section class="main">
-  <aside class="panel">
-    <h2>Heavy Chains</h2>
-    <div id="heavy-list" class="vlist"></div>
-  </aside>
+  <!-- === Heavy list === -->
+  <aside class="panel"><h2>Heavy</h2><div id="heavy-list" class="vlist"></div></aside>
 
-  <aside class="panel">
-    <h2>Light Chains</h2>
-    <div id="light-list" class="vlist"></div>
-  </aside>
+  <!-- === Light list === -->
+  <aside class="panel"><h2>Light</h2><div id="light-list" class="vlist"></div></aside>
 
+  <!-- === Center panel === -->
   <section class="panel" id="center-panel">
-    <h2>Assembly</h2>
-    <!-- 浮动抗体容器，开始为空 -->
-    <div id="float-layer" class="floating-area"></div>
+    <div id="floating-area"></div>
 
-    <div class="antibody-container">
-      <!-- Y 型骨架 -->
-      <svg id="antibody-svg" viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">
-        <polyline points="170,330 170,220 110,110 95,118 150,220 150,330 170,330"
-                  fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square"/>
-        <polyline points="190,330 190,220 250,110 265,118 210,220 210,330 190,330"
-                  fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square"/>
-        <polyline points="125.35,211.49 79.17,126.83 63.75,135.21 110,220"
-                  fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square"/>
-        <polyline points="234.65,211.49 280.83,126.83 296.25,135.21 250,220"
-                  fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square"/>
-      </svg>
-      <!-- 四个插槽 -->
-      <div id="light-pos" class="chain-position"></div>
-      <div id="hv-pos"    class="chain-position"></div>
-      <div id="hd-pos"    class="chain-position"></div>
-      <div id="hj-pos"    class="chain-position"></div>
-      <!-- 抗原标记 -->
-      <div id="antigen-mark"></div>
+    <div id="assembly-wrapper">  <!-- 将在 release 后隐藏，在 next‑antigen 时恢复 -->
+      <div id="antigen-slot" class="slot">Ag1</div>
+      <div class="chain-slot-container" style="margin-top:1rem">
+        <div id="light-slot" class="slot">Light</div>
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <div id="slot-heavy-v" class="slot" style="width:160px;height:160px;">V</div>
+          <div id="slot-heavy-d" class="slot" style="width:160px;height:160px;">D</div>
+          <div id="slot-heavy-j" class="slot" style="width:160px;height:160px;">J</div>
+        </div>
+      </div>
     </div>
+
     <button id="release-btn" disabled>Release Antibody</button>
   </section>
 
-  <aside class="panel">
-    <h2>Released</h2>
-    <div id="released-list" class="vlist"></div>
+  <!-- === Result panel === -->
+  <aside class="panel" id="result-panel">
+    <h2>Binding Result</h2>
+    <div id="result-display">Awaiting assembly…</div>
+    <button id="check-btn">Check Binding</button>
   </aside>
 </section>
 
 <div class="bottom-bar">
   <div>
     <button id="reset-btn">Reset</button>
-    <button id="save-btn">Save Antibody</button>
+    <button id="save-btn" style="margin-left:.6rem;">Save Antibody</button>
   </div>
   <button id="next-antigen-btn">Next Antigen</button>
 </div>
 
 <script>
-/* ========= 链数据 ========= */
-const heavy = ['H1','H2','H3','H4','H5'];
-const light = ['L1','L2','L3','L4','L5'];
-const svgMap = {
-  H1:'<polyline points="10,50 50,10 90,50" stroke="#0079c9" stroke-width="3" fill="none"/>',
-  H2:'<path d="M10 50 Q50 10 90 50" stroke="#0079c9" stroke-width="3" fill="none"/>',
-  H3:'<path d="M10 10 C30 80 70 80 90 10" stroke="#0079c9" stroke-width="3" fill="none"/>',
-  H4:'<path d="M10 50 Q50 90 90 50" stroke="#0079c9" stroke-width="3" fill="none"/>',
-  H5:'<path d="M10 30 C40 10 60 10 90 30" stroke="#0079c9" stroke-width="3" fill="none"/>',
-  L1:'<line x1="10" y1="10" x2="90" y2="90" stroke="#ef476f" stroke-width="3"/>',
-  L2:'<line x1="10" y1="90" x2="90" y2="10" stroke="#ef476f" stroke-width="3"/>',
-  L3:'<path d="M10 50 Q50 90 90 50" stroke="#ef476f" stroke-width="3" fill="none"/>',
-  L4:'<path d="M10 10 C30 50 70 50 90 10" stroke="#ef476f" stroke-width="3" fill="none"/>',
-  L5:'<path d="M10 90 C30 50 70 50 90 90" stroke="#ef476f" stroke-width="3" fill="none"/>'
+/*************************************************
+ * Chain SVG data (inline)                       *
+ *************************************************/
+const chains = {
+  heavy:[
+    {id:"H1", svg:'<polyline points="10,50 50,10 90,50" stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>'},
+    {id:"H2", svg:'<path d="M10 50 Q50 10 90 50" stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>'},
+    {id:"H3", svg:'<path d="M10 10 C30 80, 70 80, 90 10" stroke="#0079c9" stroke-width="3" fill="none"/>'},
+    {id:"H4", svg:'<path d="M10 50 Q50 90 90 50" stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>'},
+    {id:"H5", svg:'<path d="M10 30 C40 10, 60 10, 90 30" stroke="#0079c9" stroke-width="3" fill="none"/>'}
+  ],
+  light:[
+    {id:"L1", svg:'<line x1="10" y1="10" x2="90" y2="90" stroke="#ef476f" stroke-width="3" stroke-linecap="round"/>'},
+    {id:"L2", svg:'<line x1="10" y1="90" x2="90" y2="10" stroke="#ef476f" stroke-width="3" stroke-linecap="round"/>'},
+    {id:"L3", svg:'<path d="M10 50 Q50 90 90 50" stroke="#ef476f" stroke-width="3" stroke-linecap="round" fill="none"/>'},
+    {id:"L4", svg:'<path d="M10 10 C30 50, 70 50, 90 10" stroke="#ef476f" stroke-width="3" fill="none"/>'},
+    {id:"L5", svg:'<path d="M10 90 C30 50, 70 50, 90 90" stroke="#ef476f" stroke-width="3" fill="none"/>'}
+  ]
 };
 
-/* ========= 状态 ========= */
-let heavySel={V:null,D:null,J:null}, lightSel=null, heavyStep=0;
+/*************************************************
+ * State                                         *
+ *************************************************/
+let selectedHeavy={V:null,D:null,J:null};
+let selectedLight=null;
+let heavyIndex=0; // 0→V 1→D 2→J
 let currentAg='1';
-let floatList=[], animating=false;
+let floatingAntibodies=[];
+let animating=false;
 
-/* ========= DOM ========= */
-const hList=document.getElementById('heavy-list');
-const lList=document.getElementById('light-list');
-const slots={V:document.getElementById('hv-pos'),D:document.getElementById('hd-pos'),J:document.getElementById('hj-pos')};
-const lSlot=document.getElementById('light-pos');
-const agMark=document.getElementById('antigen-mark');
+/*************************************************
+ * DOM refs                                       *
+ *************************************************/
+const heavyList=document.getElementById('heavy-list');
+const lightList=document.getElementById('light-list');
+const resultDisp=document.getElementById('result-display');
+const heavySlotEls={V:document.getElementById('slot-heavy-v'),D:document.getElementById('slot-heavy-d'),J:document.getElementById('slot-heavy-j')};
+const lightSlotEl=document.getElementById('light-slot');
+const antigenSlot=document.getElementById('antigen-slot');
 const releaseBtn=document.getElementById('release-btn');
-const floatLayer=document.getElementById('float-layer');
-const releasedUL=document.getElementById('released-list');
+const floatingArea=document.getElementById('floating-area');
+const assemblyWrapper=document.getElementById('assembly-wrapper');
 
-/* ========= 工具 ========= */
-function makeCell(id,type){
-  const div=document.createElement('div');
-  div.className='chain-img'; div.dataset.id=id; div.dataset.type=type;
-  div.innerHTML=`<div class="chain-svg">${svgMap[id]}</div><div style="position:absolute;bottom:5px;left:0;right:0;text-align:center;font-size:.8rem;font-weight:bold;color:${type==='heavy'?'#0079c9':'#ef476f'}">${id}</div>`;
-  return div;
+/*************************************************
+ * Build chain thumbnails                         *
+ *************************************************/
+function buildThumb(chain,type){
+  const d=document.createElement('div');
+  d.className='chain-img';
+  d.dataset.chainId=chain.id;
+  d.dataset.type=type;
+  const holder=document.createElement('div');
+  holder.innerHTML=<svg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'>${chain.svg}</svg>;
+  holder.style.width='100%';holder.style.height='100%';
+  d.appendChild(holder);
+  const label=document.createElement('div');label.className='chain-name';label.textContent=chain.id;
+  label.style.color=type==='heavy'?'#0079c9':'#ef476f';
+  d.appendChild(label);
+  return d;
 }
-function updateReleaseState(){releaseBtn.disabled=!(heavySel.V&&heavySel.D&&heavySel.J&&lightSel);}
-function newAntigen(){
-  currentAg = String(Math.ceil(Math.random()*5));
-  agMark.textContent='Ag'+currentAg;
-}
-function clearSelection(){
-  document.querySelectorAll('.chain-img').forEach(c=>c.classList.remove('selected'));
-}
-/* ========= 列表构建 ========= */
-heavy.forEach(id=>hList.appendChild(makeCell(id,'heavy')));
-light.forEach(id=>lList.appendChild(makeCell(id,'light')));
+chains.heavy.forEach(c=>heavyList.appendChild(buildThumb(c,'heavy')));
+chains.light.forEach(c=>lightList.appendChild(buildThumb(c,'light')));
 
-/* ========= 点击选择 ========= */
-[hList,lList].forEach(list=>{
-  list.addEventListener('click',e=>{
-    const cell=e.target.closest('.chain-img'); if(!cell) return;
-    cell.classList.add('selected');
-    const id=cell.dataset.id, type=cell.dataset.type;
-    if(type==='heavy'){
-      ['V','D','J'][heavyStep].replace;
-      const part=['V','D','J'][heavyStep];
-      heavySel[part]=id;
-      slots[part].innerHTML=`<div class="chain-svg" style="transform:rotate(90deg)">${svgMap[id]}</div>`;
-      heavyStep=(heavyStep+1)%3;
-    }else{
-      lightSel=id;
-      lSlot.innerHTML=`<div class="chain-svg" style="transform:rotate(90deg)">${svgMap[id]}</div>`;
-    }
-    updateReleaseState();
-  });
+/*************************************************
+ * Selection logic                                *
+ *************************************************/
+function renderIntoSlot(slot,chainSvg){
+  slot.innerHTML=<div style='width:90%;height:auto;transform:rotate(-90deg);'>\n  <svg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'>${chainSvg}</svg></div>;
+}
+
+function selectChain(el){
+  const type=el.dataset.type;
+  const chainId=el.dataset.chainId;
+
+  document.querySelectorAll('.chain-img').forEach(t=>t.classList.remove('selected'));
+  el.classList.add('selected');
+
+  if(type==='heavy'){
+    const parts=['V','D','J'];
+    const part=parts[heavyIndex];
+    const chain=chains.heavy.find(c=>c.id===chainId);
+    selectedHeavy[part]=chain;
+    renderIntoSlot(heavySlotEls[part],chain.svg);
+    heavyIndex=(heavyIndex+1)%3;
+  } else {
+    const chain=chains.light.find(c=>c.id===chainId);
+    selectedLight=chain;
+    renderIntoSlot(lightSlotEl,chain.svg);
+  }
+
+  resultDisp.textContent='Awaiting assembly…';
+  releaseBtn.disabled=!isComplete();
+}
+
+function isComplete(){return selectedHeavy.V&&selectedHeavy.D&&selectedHeavy.J&&selectedLight;}
+
+heavyList.addEventListener('click',e=>{const img=e.target.closest('.chain-img');if(img)selectChain(img);});
+lightList.addEventListener('click',e=>{const img=e.target.closest('.chain-img');if(img)selectChain(img);});
+
+/*************************************************
+ * Binding logic                                  *
+ *************************************************/
+function isMatch(){
+  if(!isComplete()) return false;
+  const h=selectedHeavy.V.id.slice(1);
+  const l=selectedLight.id.slice(1);
+  return h===l && h===currentAg;
+}
+function flash(el){const f=document.createElement('div');f.className='flash-effect';el.appendChild(f);setTimeout(()=>f.remove(),800);}
+
+document.getElementById('check-btn').addEventListener('click',()=>{
+  if(!isComplete()){resultDisp.textContent='❌ Select all chains first.';return;}
+  if(isMatch()){resultDisp.textContent='✅ Perfect Fit!';[lightSlotEl,...Object.values(heavySlotEls),antigenSlot].forEach(flash);} else {
+    resultDisp.textContent='✘ No Binding. Try another combo.';
+  }
 });
 
-/* ========= 抗体 SVG 片段（约 150 行逻辑的极简版） ========= */
-function createAntibodySvg(){
-  return `<svg viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(-28deg)">
-    <polyline points="170,330 170,220 110,110 95,118 150,220 150,330 170,330"
-      fill="none" stroke="#0093ff" stroke-width="2.5" stroke-linecap="square"/>
-    <polyline points="190,330 190,220 250,110 265,118 210,220 210,330 190,330"
-      fill="none" stroke="#0093ff" stroke-width="2.5" stroke-linecap="square"/>
-    <polyline points="125.35,211.49 79.17,126.83 63.75,135.21 110,220"
-      fill="none" stroke="#0093ff" stroke-width="2.5" stroke-linecap="square"/>
-    <polyline points="234.65,211.49 280.83,126.83 296.25,135.21 250,220"
-      fill="none" stroke="#0093ff" stroke-width="2.5" stroke-linecap="square"/>
-    <g transform="translate(250,110) scale(.3) rotate(90)">${svgMap[heavySel.V]}</g>
-    <g transform="translate(210,220) scale(.3) rotate(90)">${svgMap[heavySel.D]}</g>
-    <g transform="translate(250,220) scale(.3) rotate(90)">${svgMap[heavySel.J]}</g>
-    <g transform="translate(110,110) scale(.3) rotate(90)">${svgMap[lightSel]}</g>
-  </svg>`;
+/*************************************************
+ * SVG builder (采用 v21 逻辑)                    *
+ *************************************************/
+const HEAVY_CFG={SCALE:0.12,GAP:35,SHIFT_X:-5,SHIFT_Y:-28};
+const LIGHT_CFG={SHIFT_X:30,SHIFT_Y:20,L1:{SCALE:0.28,GAP:0,SHIFT_X:30,SHIFT_Y:30,ROT_OFFSET:270}};
+
+function makeSymbol(id,svgContent){return <symbol id='${id}' viewBox='0 0 100 100'>${svgContent}</symbol>;}
+
+function createAntibodySvg(h,l){
+  // h: {V,D,J}, l:{id,svg}
+  const defs=[makeSymbol(h.V.id,h.V.svg),makeSymbol(h.D.id,h.D.svg),makeSymbol(h.J.id,h.J.svg),makeSymbol(l.id,l.svg)].join('');
+  // helper to make placePieces-compatible <script> (executed once inside outer document)
+  const skeleton=<g id='heavyLeft'><polyline points='170,330 170,220 110,110 95,118 150,220' fill='none' stroke='#0093ff' stroke-width='4' stroke-linecap='square'/><path id='axisHeavyLeft' d='M170 330 L170 220 L110 110 L95 118 L150 220' fill='none' stroke='none'/></g><g id='heavyRight' transform='translate(360 0) scale(-1 1)'><use href='#heavyLeft'/></g><g id='lightLeft'><polyline points='125.35,211.49 79.17,126.83 63.75,135.21 110,220' fill='none' stroke='#0093ff' stroke-width='4' stroke-linecap='square'/><path id='axisLightLeft' d='M125.35 211.49 L79.17 126.83 L63.75 135.21 L110 220' fill='none' stroke='none'/></g><g id='lightRight' transform='translate(360 0) scale(-1 1)'><polyline points='125.35,211.49 79.17,126.83 63.75,135.21 110,220' fill='none' stroke='#0093ff' stroke-width='4' stroke-linecap='square'/><path id='axisLightRight' d='M125.35 211.49 L79.17 126.83 L63.75 135.21 L110 220' fill='none' stroke='none'/></g>;
+  const script=<script><![CDATA[
+  const NS='http://www.w3.org/2000/svg';
+  function place(gId,axisId,ids,gap,scale,shiftX,shiftY,rotOff){
+    const g=document.getElementById(gId);const axis=document.getElementById(axisId);
+    const len=axis.getTotalLength();const base=(len-gap*(ids.length-1))/2;
+    ids.forEach((id,i)=>{const d=base+i*gap;const p=axis.getPointAtLength(d);const p2=axis.getPointAtLength(Math.min(d+0.01,len));const ang=Math.atan2(p2.y-p.y,p2.x-p.x)*180/Math.PI+rotOff;
+      const use=document.createElementNS(NS,'use');use.setAttribute('href','#'+id);use.setAttribute('transform',translate(${p.x+shiftX} ${p.y+shiftY}) rotate(${ang}) translate(-50 -50) scale(${scale}));use.setAttribute('vector-effect','non-scaling-stroke');g.appendChild(use);});}
+  place('heavyLeft','axisHeavyLeft',['${h.V.id}','${h.D.id}','${h.J.id}'],${HEAVY_CFG.GAP},${HEAVY_CFG.SCALE},${HEAVY_CFG.SHIFT_X},${HEAVY_CFG.SHIFT_Y},0);
+  place('heavyRight','axisHeavyLeft',['${h.V.id}','${h.D.id}','${h.J.id}'],${HEAVY_CFG.GAP},${HEAVY_CFG.SCALE},${HEAVY_CFG.SHIFT_X},${HEAVY_CFG.SHIFT_Y},0);
+  place('lightLeft','axisLightLeft',['${l.id}'],${LIGHT_CFG.L1.GAP},${LIGHT_CFG.L1.SCALE},${LIGHT_CFG.L1.SHIFT_X},${LIGHT_CFG.L1.SHIFT_Y},${LIGHT_CFG.L1.ROT_OFFSET});
+  place('lightRight','axisLightLeft',['${l.id}'],${LIGHT_CFG.L1.GAP},${LIGHT_CFG.L1.SCALE},${LIGHT_CFG.L1.SHIFT_X},${LIGHT_CFG.L1.SHIFT_Y},180-${LIGHT_CFG.L1.ROT_OFFSET});
+  ]]></script>;
+  return <svg viewBox='0 0 360 360' width='120' height='120' xmlns='http://www.w3.org/2000/svg' style='transform:rotate(26deg);'>${defs}${skeleton}${script}</svg>;
 }
 
-/* ========= 释放 ========= */
+/*************************************************
+ * Floating antibodies + animation               *
+ *************************************************/
+function generateFloating(){
+  const ab=createAntibodySvg(selectedHeavy,selectedLight);
+  const div=document.createElement('div');div.className='floating-antibody';div.innerHTML=ab;
+  const rect=floatingArea.getBoundingClientRect();
+  const x=10+Math.random()*(rect.width-140);const y=10+Math.random()*(rect.height-140);
+  div.style.left=${x}px;div.style.top=${y}px;
+  floatingArea.appendChild(div);
+  floatingAntibodies.push({el:div,x,y,dx:(Math.random()-0.5)*0.4,dy:(Math.random()-0.5)*0.4});
+}
+
+function animate(){
+  const rect=floatingArea.getBoundingClientRect();
+  floatingAntibodies.forEach(a=>{
+    a.x+=a.dx;a.y+=a.dy;
+    if(a.x<10||a.x>rect.width-130) a.dx*=-1;
+    if(a.y<10||a.y>rect.height-130) a.dy*=-1;
+    a.el.style.left=${a.x}px;
+    a.el.style.top=${a.y}px;
+  });
+  animating&&requestAnimationFrame(animate);
+}
+
+/*************************************************
+ * Release / Reset / Next‑Antigen                *
+ *************************************************/
 releaseBtn.addEventListener('click',()=>{
-  if(!(heavySel.V&&lightSel && heavySel.V.slice(1)===currentAg && lightSel.slice(1)===currentAg)){
-    alert('该抗体与当前抗原不匹配！'); return;
-  }
-  // 生成漂浮体
-  for(let i=0;i<4;i++){
-    const f=document.createElement('div');
-    f.className='floating-antibody';
-    f.innerHTML=createAntibodySvg();
-    const area=floatLayer.getBoundingClientRect();
-    const x=Math.random()*(area.width-120), y=Math.random()*(area.height-120);
-    Object.assign(f.style,{left:`${x}px`,top:`${y}px`});
-    floatLayer.appendChild(f);
-    floatList.push({el:f,x,y,dx:(Math.random()-.5)*1.4,dy:(Math.random()-.5)*1.4,rot:Math.random()*360,drot:(Math.random()-.5)*.8});
-  }
-  if(!animating){animating=true;requestAnimationFrame(step);}
-  // 加入右侧已释放列表
-  const li=document.createElement('div');li.innerHTML=createAntibodySvg().replace(/360/g,'120');releasedUL.prepend(li);
-  // 重置
-  heavySel={V:null,D:null,J:null};lightSel=null;heavyStep=0;
-  lSlot.innerHTML='';Object.values(slots).forEach(s=>s.innerHTML='');
-  clearSelection();updateReleaseState();newAntigen();
+  if(!isComplete())return;
+  // hide assembly slots until next antigen
+  assemblyWrapper.style.display='none';
+  // create 5 copies
+  for(let i=0;i<5;i++) generateFloating();
+  if(!animating){animating=true;requestAnimationFrame(animate);}  
 });
-function step(){
-  const area=floatLayer.getBoundingClientRect();
-  floatList.forEach(o=>{
-    o.x+=o.dx;o.y+=o.dy;o.rot+=o.drot;
-    if(o.x<=0||o.x>=area.width-120) o.dx*=-1;
-    if(o.y<=0||o.y>=area.height-120) o.dy*=-1;
-    Object.assign(o.el.style,{left:`${o.x}px`,top:`${o.y}px`,transform:`rotate(${o.rot}deg)`});
-  });
-  requestAnimationFrame(step);
+
+document.getElementById('reset-btn').addEventListener('click',()=>{
+  resetAll();
+});
+
+function resetAll(){
+  selectedHeavy={V:null,D:null,J:null};selectedLight=null;heavyIndex=0;
+  document.querySelectorAll('.chain-img').forEach(c=>c.classList.remove('selected'));
+  Object.values(heavySlotEls).forEach(s=>{s.innerHTML=s.id.split('-').pop().toUpperCase();});
+  lightSlotEl.innerHTML='Light';
+  resultDisp.textContent='Awaiting assembly…';
+  releaseBtn.disabled=true;
 }
 
-/* ========= 其他按钮 ========= */
-document.getElementById('reset-btn').onclick=()=>location.reload();
-document.getElementById('save-btn').onclick=()=>alert('Save feature coming soon');
-document.getElementById('next-antigen-btn').onclick=newAntigen;
+document.getElementById('save-btn').addEventListener('click',()=>{
+  if(isComplete()) alert(Saved: ${selectedHeavy.V.id}/${selectedHeavy.D.id}/${selectedHeavy.J.id}-${selectedLight.id});
+  else alert('Complete antibody first!');
+});
 
-/* ========= 启动 ========= */
-newAntigen();
+function nextAntigen(){
+  // clear floating antibodies
+  floatingAntibodies.forEach(a=>a.el.remove());
+  floatingAntibodies=[];animating=false;
+  assemblyWrapper.style.display='block';
+  resetAll();
+  const pool=[...chains.heavy,...chains.light];
+  const rnd=pool[Math.floor(Math.random()*pool.length)];
+  currentAg=rnd.id.slice(1);
+  antigenSlot.innerHTML=<div style='width:90%;height:auto;transform:scaleX(-1);'><svg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'>${rnd.svg}</svg></div>;
+}
+
+document.getElementById('next-antigen-btn').addEventListener('click',nextAntigen);
+
+// initial antigen
+nextAntigen();
 </script>
 </body>
 </html>
