@@ -246,59 +246,60 @@ const chains = {
   light: [
     { id: "L1", name: "Light L1", svg: `
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <line x1="10" y1="50" x2="90" y2="50"
-        stroke="#0079c9" stroke-width="3" stroke-linecap="round"/>
-</svg>`},
+  <polyline points="10,50 40,60 60,40 90,50"
+            stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>` },
     { id: "L2", name: "Light L2", svg: `
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <path d="M10 50 Q50 90 90 50"
+  <path d="M10,50 Q30,35 50,50 T90,50"
         stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
-</svg>`},
+</svg>` },
     { id: "L3", name: "Light L3", svg: `
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <polyline points="10,50 40,20 60,80 90,50"
+  <polyline points="10,50 30,80 50,50 70,20 90,50"
             stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
-</svg>`},
+</svg>` },
     { id: "L4", name: "Light L4", svg: `
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <path d="M10 50 Q30 10 50 50 T90 50"
+  <path d="M10,50 Q25,25 50,50 Q75,75 90,50"
         stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
-</svg>`},
+</svg>` },
     { id: "L5", name: "Light L5", svg: `
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <polyline points="10,50 35,80 65,20 90,50"
+  <polyline points="10,50 30,30 50,50 70,70 90,50"
             stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
-</svg>`}
+</svg>` }
   ],
 
   heavy: [
     { id: "H1", name: "Heavy H1", svg: `
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <line x1="10" y1="50" x2="90" y2="50"
-        stroke="#0079c9" stroke-width="3" stroke-linecap="round"/>
-</svg>`},
+  <polyline points="10,50 30,20 70,80 90,50"
+            stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>` },
     { id: "H2", name: "Heavy H2", svg: `
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <path d="M10 50 Q50 10 90 50"
+  <path d="M10,50 Q35,15 50,50 T90,50"
         stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
-</svg>`},
+</svg>` },
     { id: "H3", name: "Heavy H3", svg: `
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <path d="M10 50 Q30 15 50 50 T90 50"
+  <path d="M10,50 Q25,35 40,50 Q60,80 90,50"
         stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
-</svg>`},
+</svg>` },
     { id: "H4", name: "Heavy H4", svg: `
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <path d="M10 50 Q30 10 50 50 T90 50"
+  <path d="M10,50 Q30,10 60,50 Q80,90 90,50"
         stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
-</svg>`},
+</svg>` },
     { id: "H5", name: "Heavy H5", svg: `
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <polyline points="10,50 35,20 65,80 90,50"
+  <polyline points="10,50 35,70 50,50 65,30 90,50"
             stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
-</svg>`}
+</svg>` }
   ]
 };
+
 
 /*************************************************
  *  State                                        *
