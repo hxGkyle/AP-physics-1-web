@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Antibody Workshop – B-Cell Edition (Combined)</title>
+<title>Make Your Antibody</title>
 <style>
   /* ===== Reset ===== */
   *,*:before,*:after{box-sizing:border-box;margin:0;padding:0;}
@@ -18,6 +18,8 @@
     background:radial-gradient(circle at center,#e9f5ff 0%,#c9e4f7 45%,#b0d8f1 100%);
     color:#073b4c;
   }
+
+#randomize-antigen:hover { background:#0e799c; }
 
   /* ===== Header ===== */
   header{text-align:center;padding:1rem 2rem;background:#118ab2;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.14);}  
@@ -43,6 +45,10 @@
   #center-panel{position:relative;align-items:center;justify-content:center;gap:1rem;}
   #floating-area{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1;}
   .slot{width:200px;height:200px;border:2px dashed #bfd7ea;border-radius:12px;background:rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;z-index:2;}
+  #antigen-slot{
+  width:300px;          /* 1.5 × 200 */
+  height:300px;
+}
   .slot img{position:absolute;width:90%;height:auto;object-fit:contain;}
   .chain-slot-container{display:flex;gap:1.5rem;}
   .chain-slot-container .slot{width:160px;height:160px;}
@@ -66,9 +72,65 @@
 </head>
 <body>
 <header>
-  <h1>Antibody Workshop – B-Cell Mode</h1>
+  <h1>Make Your Antibody</h1>
   <p>Select heavy & light chains, assemble antibodies, test binding, then release.</p>
 </header>
+<!-- ↓ 全局链段符号定义，放在 <body> 开头，替换掉旧版 defs ↓ -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Heavy -->
+    <symbol id="H1" viewBox="0 0 100 100">
+      <line x1="10" y1="50" x2="90" y2="50"
+            stroke="#0079c9" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="H2" viewBox="0 0 100 100">
+      <path d="M10 50 Q50 10 90 50"
+            stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="H3" viewBox="0 0 100 100">
+      <path d="M10 50 Q30 15 50 50 T90 50"
+            stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="H4" viewBox="0 0 100 100">
+      <path d="M10 50 Q30 10 50 50 T90 50"
+            stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="H5" viewBox="0 0 100 100">
+      <polyline points="10,50 35,20 65,80 90,50"
+                stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </symbol>
+
+    <!-- Light -->
+    <symbol id="L1" viewBox="0 0 100 100">
+      <line x1="10" y1="50" x2="90" y2="50"
+            stroke="#0079c9" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="L2" viewBox="0 0 100 100">
+      <path d="M10 50 Q50 90 90 50"
+            stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="L3" viewBox="0 0 100 100">
+      <polyline points="10,50 40,20 60,80 90,50"
+                stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="L4" viewBox="0 0 100 100">
+      <path d="M10 50 Q30 10 50 50 T90 50"
+            stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="L5" viewBox="0 0 100 100">
+      <polyline points="10,50 35,80 65,20 90,50"
+                stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="axisTemplateL" viewBox="0 0 400 260">
+      <path d="M60 50 Q40 130 60 210" fill="none" />
+    </symbol>
+    <symbol id="axisTemplateH" viewBox="0 0 400 260">
+      <path d="M60 50 L60 210" fill="none" />
+    </symbol>
+  </defs>
+</svg>
+
+
 <section class="main">
   <!-- === Heavy list === -->
   <aside class="panel">
@@ -108,29 +170,139 @@
 <div class="bottom-bar">
   <div>
     <button id="reset-btn">Reset</button>
-    <button id="save-btn" style="margin-left:.6rem;">Save Antibody</button>
   </div>
   <button id="next-antigen-btn">Next Antigen</button>
 </div>
 
 <script>
+
+  function placePieces({path, group, ids, gap, scale, shiftX=0, shiftY=0, rotOffset=0}) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (typeof path === 'string') ? document.getElementById(path) : path;
+  if (!el || typeof el.getTotalLength !== 'function') return;
+  const len = el.getTotalLength();
+  const start = (len - gap * (ids.length - 1)) / 2;
+  // 先删掉已有的
+  group.querySelectorAll('use.piece').forEach(n => n.remove());
+  ids.forEach((id, i) => {
+    const d = start + i * gap;
+    const p1 = el.getPointAtLength(d);
+    const p2 = el.getPointAtLength(Math.min(d + 0.01, len));
+    const ang = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180/Math.PI + rotOffset;
+    const u = document.createElementNS(NS, 'use');
+    u.classList.add('piece');
+    u.setAttribute('href', `#${id}`);
+    u.setAttribute('vector-effect','non-scaling-stroke');
+    u.setAttribute('transform',
+      `translate(${p1.x + shiftX} ${p1.y + shiftY}) ` +
+      `rotate(${ang}) translate(-50 -50) scale(${scale})`);
+    group.appendChild(u);
+  });
+}
+function placePiecesAg(opts){
+  const {
+    path, group, ids, gap, scale,
+    shiftX=0, shiftY=0, rotOffset=0,
+    quantizeHeavy=true, mirrorAngle=false
+  } = opts;
+
+  const el = (typeof path==='string')
+               ? group.querySelector(path)
+               : path;
+  if(!el || typeof el.getTotalLength!=='function') return;
+
+  const NS   = 'http://www.w3.org/2000/svg';
+  const len  = el.getTotalLength();
+  const base = (len - gap * (ids.length-1)) / 2;
+
+  group.querySelectorAll('use.piece').forEach(n=>n.remove());
+
+  ids.forEach((id,i)=>{
+    const d  = base + i*gap;
+    const p1 = el.getPointAtLength(d);
+    const p2 = el.getPointAtLength(Math.min(d+0.01,len));
+    let ang  = Math.atan2(p2.y-p1.y,p2.x-p1.x)*180/Math.PI + rotOffset;
+    if(quantizeHeavy && id.startsWith('H')) ang = Math.round(ang/90)*90;
+    if(mirrorAngle) ang = ang;   // 保持镜像
+
+    const u = document.createElementNS(NS,'use');
+    u.classList.add('piece');
+    u.setAttribute('href',`#${id}`);
+    u.setAttribute('transform',
+      `translate(${p1.x+shiftX} ${p1.y+shiftY}) rotate(${ang}) `+
+      `translate(-50 -50) scale(${scale})`);
+    group.appendChild(u);
+
+    /* —— 定位竖线（仅左 L 第 1 片） —— */
+    if(group.id==='agLeft' && id.startsWith('L') && i===0){
+      const VLEN=55, VX=130, VY=16, rad=ang*Math.PI/180;
+      const x=p1.x+shiftX + VX*Math.cos(rad)-VY*Math.sin(rad);
+      const y=p1.y+shiftY + VX*Math.sin(rad)+VY*Math.cos(rad);
+      const svgRoot = group.ownerSVGElement;          // 当前 use 所在的 <svg>
+      const line    = svgRoot.getElementById('agVertLine');
+      line.setAttribute('x1',x); line.setAttribute('x2',x);
+      line.setAttribute('y1',y-VLEN/2); line.setAttribute('y2',y+VLEN/2);
+    }
+  });
+}
 /*************************************************
  *  Chain definitions (inline SVG strings)       *
  *************************************************/
 const chains = {
-  heavy: [
-    { id:"H1", name:"Heavy Alpha", svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polyline points="10,50 50,10 90,50" stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/></svg>'},
-    { id:"H2", name:"Heavy Beta",  svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 Q50 10 90 50" stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/></svg>'},
-    { id:"H3", name:"Heavy Gamma", svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 10 C30 80, 70 80, 90 10" stroke="#0079c9" stroke-width="3" fill="none"/></svg>'},
-    { id:"H4", name:"Heavy Delta", svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 Q50 90 90 50" stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/></svg>'},
-    { id:"H5", name:"Heavy Epsilon",svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 30 C40 10, 60 10, 90 30" stroke="#0079c9" stroke-width="3" fill="none"/></svg>'}
-  ],
   light: [
-    { id:"L1", name:"Light Alpha", svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="10" y1="10" x2="90" y2="90" stroke="#ef476f" stroke-width="3" stroke-linecap="round"/></svg>'},
-    { id:"L2", name:"Light Beta",  svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="10" y1="90" x2="90" y2="10" stroke="#ef476f" stroke-width="3" stroke-linecap="round"/></svg>'},
-    { id:"L3", name:"Light Gamma", svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 Q50 90 90 50" stroke="#ef476f" stroke-width="3" stroke-linecap="round" fill="none"/></svg>'},
-    { id:"L4", name:"Light Delta", svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 10 C30 50, 70 50, 90 10" stroke="#ef476f" stroke-width="3" fill="none"/></svg>'},
-    { id:"L5", name:"Light Epsilon",svg:'<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 90 C30 50, 70 50, 90 90" stroke="#ef476f" stroke-width="3" fill="none"/></svg>'}
+    { id: "L1", name: "Light L1", svg: `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <line x1="10" y1="50" x2="90" y2="50"
+        stroke="#0079c9" stroke-width="3" stroke-linecap="round"/>
+</svg>`},
+    { id: "L2", name: "Light L2", svg: `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 50 Q50 90 90 50"
+        stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>`},
+    { id: "L3", name: "Light L3", svg: `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <polyline points="10,50 40,20 60,80 90,50"
+            stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>`},
+    { id: "L4", name: "Light L4", svg: `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 50 Q30 10 50 50 T90 50"
+        stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>`},
+    { id: "L5", name: "Light L5", svg: `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <polyline points="10,50 35,80 65,20 90,50"
+            stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>`}
+  ],
+
+  heavy: [
+    { id: "H1", name: "Heavy H1", svg: `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <line x1="10" y1="50" x2="90" y2="50"
+        stroke="#0079c9" stroke-width="3" stroke-linecap="round"/>
+</svg>`},
+    { id: "H2", name: "Heavy H2", svg: `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 50 Q50 10 90 50"
+        stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>`},
+    { id: "H3", name: "Heavy H3", svg: `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 50 Q30 15 50 50 T90 50"
+        stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>`},
+    { id: "H4", name: "Heavy H4", svg: `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 50 Q30 10 50 50 T90 50"
+        stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>`},
+    { id: "H5", name: "Heavy H5", svg: `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <polyline points="10,50 35,20 65,80 90,50"
+            stroke="#0079c9" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>`}
   ]
 };
 
@@ -143,6 +315,8 @@ let heavyIndex = 0;               // 0→V, 1→D, 2→J
 let currentAg = '1';
 let floatingAntibodies = [];
 let animationStarted = false;
+let antigenLightId  = '';      // 当前抗原的 L 片段 id
+let antigenHeavyIds = [];      // 当前抗原的 3 条 H 片段 id（数组）
 
 /*************************************************
  *  DOM convenience                              *
@@ -210,7 +384,7 @@ function selectChain(el){
   } else {
     const chainObj = chains.light.find(c=>c.id===chainId);
     selectedLight={...chainObj};
-    renderIntoSlot(lightSlotEl, chainObj.svg, -90);
+    renderIntoSlot(lightSlotEl, chainObj.svg, 90);
   }
 
   // reset binding message and enable release if complete
@@ -236,13 +410,19 @@ function isAntibodyComplete(){
 /*************************************************
  *  Binding check logic (same as first version)  *
  *************************************************/
-function isMatch(){
-  if(!(selectedHeavy.V&&selectedLight)) return false;
-  const h = selectedHeavy.V.id.slice(1); // using V segment id suffices for demo
-  const l = selectedLight.id.slice(1);
-  return h===l && h===currentAg;
-}
+function isMatch () {
+  if (!(selectedHeavy.V && selectedHeavy.D && selectedHeavy.J && selectedLight)) {
+    return false;                 // 片段没选全
+  }
 
+  // 1) 轻链必须完全一致
+  if (selectedLight.id !== antigenLightId) return false;
+
+  // 2) 三条重链（V/D/J）与抗原的 H 片段比：只要“集合相同”即可
+  const you   = [selectedHeavy.V.id, selectedHeavy.D.id, selectedHeavy.J.id].sort().join('');
+  const agSet = [...antigenHeavyIds].sort().join('');
+  return you === agSet;
+}
 function flash(el){
   const f=document.createElement('div');
   f.className='flash-effect';
@@ -265,31 +445,185 @@ const ANTIBODY_CONFIG = {
   rotationSpeed : 0.1
 };
 
-function createAntibodySvg(heavyChain, lightChain, scale=1){
-  const {chainPositions} = ANTIBODY_CONFIG;
-  const scaledSize = ANTIBODY_CONFIG.baseSize*scale;
-  return `\n    <svg viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg" width="${scaledSize}" height="${scaledSize}" style="transform:rotate(26deg);">\n      <polyline points="170,330 170,220 110,110 94.59,118.41 150,220 150,330 170,330" fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/>\n      <polyline points="125.35,211.49 79.17,126.83 63.75,135.21 110,220 125.35,211.49" fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/>\n      <polyline points="190,330 190,220 250,110 265.41,118.41 210,220 210,330 190,330" fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/>\n      <polyline points="234.65,211.49 280.83,126.83 296.25,135.21 250,220 234.65,211.49" fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/>\n      <g transform="translate(${chainPositions.light.x},${chainPositions.light.y}) scale(${chainPositions.light.scale}) rotate(${chainPositions.light.rotation})">${lightChain.svg}</g>\n      <g transform="translate(${chainPositions.heavyV.x},${chainPositions.heavyV.y}) scale(${chainPositions.heavyV.scale}) rotate(${chainPositions.heavyV.rotation})">${heavyChain.V.svg}</g>\n      <g transform="translate(${chainPositions.heavyD.x},${chainPositions.heavyD.y}) scale(${chainPositions.heavyD.scale}) rotate(${chainPositions.heavyD.rotation})">${heavyChain.D.svg}</g>\n      <g transform="translate(${chainPositions.heavyJ.x},${chainPositions.heavyJ.y}) scale(${chainPositions.heavyJ.scale}) rotate(${chainPositions.heavyJ.rotation})">${heavyChain.J.svg}</g>\n    </svg>`;
+function createAntibodySvg() {
+  return `
+<svg viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">
+  <!-- Heavy left branch -->
+  <g id="heavyLeftGroup">
+    <polyline points="170,330 170,220 110,110 95,118 150,220"
+              fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square"/>
+    <path id="axisHeavyLeft"
+          d="M170 330 L170 220 L110 110 L95 118 L150 220"
+          fill="none"/>
+  </g>
+
+  <!-- Heavy right branch (mirror) -->
+  <g id="heavyRightGroup" transform="translate(360 0) scale(-1 1)">
+    <polyline points="170,330 170,220 110,110 95,118 150,220"
+              fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square"/>
+    <path id="axisHeavyRight"
+          d="M170 330 L170 220 L110 110 L95 118 L150 220"
+          fill="none"/>
+  </g>
+
+  <!-- Light left branch -->
+  <g id="lightLeftGroup" transform="translate(-20 15)">
+    <polyline points="125.35,211.49 79.17,126.83 63.75,135.21 110,220"
+              fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square"/>
+    <path id="axisLightLeft"
+          d="M125.35 211.49 L79.17 126.83 L63.75 135.21 L110 220"
+          fill="none"/>
+  </g>
+
+  <!-- Light right branch (mirror) -->
+  <g id="lightRightGroup" transform="translate(360 0) scale(-1 1) translate(-20 15)">
+    <polyline points="125.35,211.49 79.17,126.83 63.75,135.21 110,220"
+              fill="none" stroke="#0093ff" stroke-width="3" stroke-linecap="square"/>
+    <path id="axisLightRight"
+          d="M125.35 211.49 L79.17 126.83 L63.75 135.21 L110 220"
+          fill="none"/>
+  </g>
+</svg>`;
+}
+
+function decorateAntibodySvg(svgEl, heavyChain, lightChain) {
+  // heavy left
+  placePieces({
+    path   : svgEl.getElementById('axisHeavyLeft'),
+    group  : svgEl.getElementById('heavyLeftGroup'),
+    ids    : [heavyChain.J.id, heavyChain.D.id, heavyChain.V.id],  // D-V-J order
+    gap    : 35,
+    scale  : 0.12,
+    shiftX : -5,
+    shiftY : -28
+  });
+
+  // heavy right
+  placePieces({
+    path   : svgEl.getElementById('axisHeavyRight'),
+    group  : svgEl.getElementById('heavyRightGroup'),
+    ids    : [heavyChain.J.id, heavyChain.D.id, heavyChain.V.id],
+    gap    : 35,
+    scale  : 0.12,
+    shiftX : -5,
+    shiftY : -28
+  });
+
+  // light left
+  placePieces({
+    path     : svgEl.getElementById('axisLightLeft'),
+    group    : svgEl.getElementById('lightLeftGroup'),
+    ids      : [lightChain.id],
+    gap      : 0,
+    scale    : 0.28,
+    shiftX   : 30,
+    shiftY   : 30,
+    rotOffset: 270
+  });
+
+  // light right
+  placePieces({
+    path     : svgEl.getElementById('axisLightRight'),
+    group    : svgEl.getElementById('lightRightGroup'),
+    ids      : [lightChain.id],
+    gap      : 0,
+    scale    : 0.28,
+    shiftX   : 30,
+    shiftY   : 30,
+    rotOffset: 270
+  });
+}
+
+/* ========= Antigen 生成模块 ========= */
+function createAntigenSvg () {
+  return `
+<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+  <!-- 顶部固定矩形 -->
+  <rect x="150" y="10" width="100" height="40"
+        fill="none" stroke="#222" stroke-width="2"/>
+  <!-- 左 L 路径 -->
+  <g id="agLeft">
+    <path id="axisAgL" d="M60 50 Q40 130 60 210" fill="none"></path>
+  </g>
+  <!-- 右 H 路径（镜像） -->
+  <g id="agRight" transform="translate(400 0) scale(-1 -1)">
+    <path id="axisAgH" d="M60 50 L60 210" fill="none"></path>
+  </g>
+  <!-- 底部横线 -->
+  <line x1="154" y1="210" x2="246" y2="210"
+        stroke="#222" stroke-width="2"/>
+  <!-- 动态竖线 -->
+  <line id="agVertLine" stroke="#0079c9" stroke-width="2"/>
+</svg>`;
+}
+
+function decorateAntigenSvg (svgEl, lightId /* 如 "L3" */) {
+  // 参数配置与独立 demo 一致
+  //const cfgL = { scale:0.5, gap:0,  shiftX:120, shiftY:-77, rotOffset:270 };
+const cfgL = {      // 轻链 (左)
+  scale: 0.5,
+  gap:   0,
+  shiftX: 120,
+  shiftY: -75,   // 原来 -77, 抬高一点
+  rotOffset: 0   // ← 由 270 改 0，让 L 竖起来
+};
+const cfgH = { scale: 0.25, gap:52, shiftX: 75, shiftY:  -260, rotOffset:  0 };
+
+  // 左 L
+ placePiecesAg({
+  path : svgEl.getElementById('axisAgL'),
+  group: svgEl.getElementById('agLeft'),
+  ids  : [lightId],
+  ...cfgL,  quantizeHeavy:false, mirrorAngle:false
+  });
+
+  // 右 H
+  placePiecesAg({
+  path : svgEl.getElementById('axisAgH'),
+  group: svgEl.getElementById('agRight'),
+  ids  : antigenHeavyIds,
+  ...cfgH, quantizeHeavy:true,  mirrorAngle:false
+  });
+
 }
 
 /*************************************************
  *  Floating antibody helpers (from middle)      *
  *************************************************/
-function generateFloatingAntibodies(heavyChain, lightChain, count, container){
-  const arr=[];
-  const rect=container.getBoundingClientRect();
-  for(let i=0;i<count;i++){
-    const div=document.createElement('div');
-    div.className='floating-antibody';
-    div.innerHTML=createAntibodySvg(heavyChain,lightChain);
+function generateFloatingAntibodies(heavyChain, lightChain, count, container, scale = 1) {
+  const arr  = [];
+  const rect = container.getBoundingClientRect();
 
-    // random initial pos (10px margin)
-    const x = 10 + Math.random()*(rect.width-140);
-    const y = 10 + Math.random()*(rect.height-140);
-    div.style.left=`${x}px`;
-    div.style.top =`${y}px`;
+  for (let i = 0; i < count; i++) {
+    const div = document.createElement('div');
+    div.className = 'floating-antibody';
+    // 把骨架 SVG 放进来：
+    div.innerHTML = createAntibodySvg();
+
+    // 拿到刚插入的 <svg> 元素：
+    const svgEl = div.querySelector('svg');
+    // 先统一缩放：
+    svgEl.setAttribute('width', 360 * scale);
+    svgEl.setAttribute('height', 360 * scale);
+
+    // 再动态贴重轻链片段：
+    decorateAntibodySvg(svgEl, heavyChain, lightChain);
+
+    // 随机定位
+    const x = 10 + Math.random() * (rect.width  - 140);
+    const y = 10 + Math.random() * (rect.height - 140);
+    div.style.left = `${x}px`;
+    div.style.top  = `${y}px`;
 
     container.appendChild(div);
-    arr.push({element:div,x,y,dx:(Math.random()-0.5)*ANTIBODY_CONFIG.floatingSpeed,dy:(Math.random()-0.5)*ANTIBODY_CONFIG.floatingSpeed,rotation:Math.random()*360,rotationSpeed:(Math.random()-0.5)*ANTIBODY_CONFIG.rotationSpeed});
+    arr.push({
+      element      : div,
+      x, y,
+      dx           : (Math.random() - 0.5) * ANTIBODY_CONFIG.floatingSpeed,
+      dy           : (Math.random() - 0.5) * ANTIBODY_CONFIG.floatingSpeed,
+      rotation     : Math.random() * 360,
+      rotationSpeed: (Math.random() - 0.5) * ANTIBODY_CONFIG.rotationSpeed
+    });
   }
   return arr;
 }
@@ -344,11 +678,16 @@ document.getElementById('check-btn').addEventListener('click',()=>{
 });
 
 // Release antibody – generates floating copies
-releaseBtn.addEventListener('click',()=>{
-  if(!isAntibodyComplete()) return;
-  const newOnes = generateFloatingAntibodies(selectedHeavy, selectedLight, 5, floatingArea);
+releaseBtn.addEventListener('click', () => {
+  if (!isAntibodyComplete()) return;
+  const newOnes = generateFloatingAntibodies(
+    selectedHeavy, selectedLight, 10, floatingArea, 1
+  );
   floatingAntibodies = floatingAntibodies.concat(newOnes);
-  if(!animationStarted){animationStarted=true;requestAnimationFrame(animate);}  
+  if (!animationStarted) {
+    animationStarted = true;
+    requestAnimationFrame(animate);
+  }
 });
 
 // Reset
@@ -361,32 +700,41 @@ function resetAll(){
   lightSlotEl.innerHTML='Light';
   resultDisp.textContent='Awaiting assembly…';
   releaseBtn.disabled=true;
+  floatingArea.innerHTML = '';
+  floatingAntibodies = [];
 }
 
 document.getElementById('reset-btn').addEventListener('click',resetAll);
 
-// Save button (placeholder)
-document.getElementById('save-btn').addEventListener('click',()=>{
-  if(isAntibodyComplete()){
-    alert(`Saved antibody: ${selectedHeavy.V.id}/${selectedHeavy.D.id}/${selectedHeavy.J.id}-${selectedLight.id}`);
-  } else {m
-    alert('Complete the antibody first!');
-  }
-});
+function nextAntigen () {
+  /* 1) 随机决定本轮抗原的片段 --------------------------- */
+  antigenLightId  = 'L' + Math.ceil(Math.random()*5);
+  antigenHeavyIds = [
+    'H' + Math.ceil(Math.random()*5),
+    'H' + Math.ceil(Math.random()*5),
+    'H' + Math.ceil(Math.random()*5)
+  ];
 
-// Next antigen button (random mirror of heavy/light)
-function nextAntigen(){
-  const pool=[...chains.heavy,...chains.light];
-  const rnd=pool[Math.floor(Math.random()*pool.length)];
-  currentAg=rnd.id.slice(1);
-  antigenSlot.innerHTML=`<div style="transform:scaleX(-1);width:90%;height:auto;">${rnd.svg}</div>`;
-  resultDisp.textContent='Awaiting assembly…';
+  /* 2) 在槽里画出骨架 ----------------------------------- */
+  const slot = document.getElementById('antigen-slot');
+  slot.innerHTML = createAntigenSvg();
+  const svg = slot.querySelector('svg');
+  svg.style.transformOrigin = 'center center';
+  svg.style.transform       = 'scale(1.5)';
+
+  /* 3) 贴片段 ------------------------------------------- */
+  decorateAntigenSvg(svg, antigenLightId);
+
+  /* 4) 更新提示文本 ------------------------------------- */
+  document.getElementById('result-display').textContent = 'Awaiting assembly…';
 }
 
-document.getElementById('next-antigen-btn').addEventListener('click',nextAntigen);
+nextAntigen()
 
-// Init first antigen
-nextAntigen();
+document.getElementById('next-antigen-btn')
+        .addEventListener('click', nextAntigen);
+
+
 </script>
 </body>
 </html>
