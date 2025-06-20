@@ -759,11 +759,11 @@ document.getElementById('reset-btn').addEventListener('click',resetAll);
 
 function nextAntigen () {
   /* 1) 随机决定本轮抗原的片段 --------------------------- */
-  antigenLightId  = 'L' + Math.ceil(Math.random()*5);
+  antigenLightId  = 'L' + Math.ceil(Math.random()*10);
   antigenHeavyIds = [
-    'H' + Math.ceil(Math.random()*5),
-    'H' + Math.ceil(Math.random()*5),
-    'H' + Math.ceil(Math.random()*5)
+    'H' + Math.ceil(Math.random()*10),
+    'H' + Math.ceil(Math.random()*10),
+    'H' + Math.ceil(Math.random()*10)
   ];
 
   /* 2) 在槽里画出骨架 ----------------------------------- */
